@@ -27,6 +27,7 @@ def main():
         ur.route(program=options.program)
     except Exception as error:
         log.error(str(error))
+        exit(1)
 
 
 if __name__ == "__main__":
