@@ -40,12 +40,16 @@ class Uroute:
 
     def _init_logging(self, config_section):
         logging_config = {}
+
         if 'log_level' in config_section:
             logging_config['level'] = config_section['log_level']
         else:
-            logging_config['level'] = 'INFO'
+            logging_config['level'] = 'DEBUG'
+
         if 'log_format' in config_section:
             logging_config['format'] = config_section['log_format']
+        else:
+            logging_config['level'] = '%(levelname)s %(msg)s'
 
         logging.basicConfig(**logging_config)
 
