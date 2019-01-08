@@ -49,7 +49,7 @@ class Uroute:
         if 'log_format' in config_section:
             logging_config['format'] = config_section['log_format']
         else:
-            logging_config['level'] = '%(levelname)s %(msg)s'
+            logging_config['format'] = '%(levelname)s %(message)s'
 
         logging.basicConfig(**logging_config)
 
