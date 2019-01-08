@@ -25,7 +25,8 @@ def main():
     ur = Uroute(options.URL, verbose=options.verbose)
     try:
         command = ur.get_command(program=options.program)
-        ur.run_with_url(command)
+        if command:
+            ur.run_with_url(command)
     except Exception as error:
         log.error(str(error))
         exit(1)
