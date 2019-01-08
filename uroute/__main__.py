@@ -22,9 +22,9 @@ def create_argument_parser():
 
 def main():
     options = create_argument_parser().parse_args()
-    ur = Uroute(verbose=options.verbose)
+    ur = Uroute(options.URL, verbose=options.verbose)
     try:
-        ur.route(options.URL, program=options.program)
+        ur.route(program=options.program)
     except Exception as error:
         log.error(str(error))
 

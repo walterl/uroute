@@ -12,11 +12,13 @@ log = logging.getLogger(__name__)
 
 
 class Uroute:
-    def __init__(self, verbose=False):
-        self.config = configparser.ConfigParser()
-        self.programs = {}
-        self.default_program = None
+    def __init__(self, url, verbose=False):
+        self.url = url
         self.verbose = verbose
+
+        self.config = configparser.ConfigParser()
+        self.default_program = None
+        self.programs = {}
 
         self.load_config()
 
@@ -78,19 +80,19 @@ class Uroute:
             raise ValueError('Unknown program ID: {}'.format(prog_id))
         return self.programs[prog_id]
 
-    def route(self, url, program=None):
+    def route(self, program=None):
         if isinstance(program, str) or program is None:
             program = self.get_program(program)
 
         if self.verbose > 0:
-            log.debug('Routing URL {} to program {}'.format(url, program))
+            log.debug('Routing URL %s to program %s', self.url, program)
 
         run_args = [
-            arg == '@URL' and url or arg for arg in program.command.split()
+            arg == '@URL' and self.url or arg for arg in command.split()
         ]
 
-        if url not in run_args:
-            run_args.append(url)
+        if self.url not in run_args:
+            run_args.append(self.url)
 
         log.info(repr(run_args))
         subprocess.run(run_args)
