@@ -84,12 +84,14 @@ class Uroute:
             raise ValueError('Unknown program ID: {}'.format(prog_id))
         return self.programs[prog_id]
 
-    def route(self, program=None):
-        if isinstance(program, str) or program is None:
+    def get_command(self, program):
+        if not isinstance(program, Program):
             program = self.get_program(program)
+        return program.command
 
+    def run_with_url(self, command):
         if self.verbose > 0:
-            log.debug('Routing URL %s to program %s', self.url, program)
+            log.debug('Routing URL %s to command: %s', self.url, command)
 
         run_args = [
             arg == '@URL' and self.url or arg for arg in command.split()

@@ -24,7 +24,8 @@ def main():
     options = create_argument_parser().parse_args()
     ur = Uroute(options.URL, verbose=options.verbose)
     try:
-        ur.route(program=options.program)
+        command = ur.get_command(program=options.program)
+        ur.run_with_url(command)
     except Exception as error:
         log.error(str(error))
         exit(1)
