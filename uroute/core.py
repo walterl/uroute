@@ -1,12 +1,11 @@
-import configparser
 import logging
-import os
 import subprocess
 from collections import namedtuple
 
+from uroute.config import Config
+
 
 Program = namedtuple('Program', ('name', 'command'))
-DEFAULT_CONFIG = os.path.expanduser('~/.uroute.ini')
 
 log = logging.getLogger(__name__)
 
@@ -15,59 +14,46 @@ class Uroute:
     def __init__(self, url, verbose=False):
         self.url = url
         self.verbose = verbose
-
-        self.config = configparser.ConfigParser()
         self.default_program = None
-        self.programs = {}
 
-        self.load_config()
+        # Load config
+        self.config = Config()
+        self._init_logging()
+        self.programs = self._load_config_programs()
 
-    def load_config(self, filename=None):
-        if filename is None:
-            filename = DEFAULT_CONFIG
+    def _init_logging(self):
+        logging_config = {
+            'level': 'DEBUG',
+            'format': '%(levelname)s %(message)s',
+        }
 
-        self.config.clear()
-        self.config.read(filename)
-
-        if 'uroute' in self.config:
-            section = self.config['uroute']
-
-            if 'default_program' in section:
-                self.default_program = section['default_program']
-            self._init_logging(section)
-
-        self.programs = self._read_programs(self.config)
-
-    def _init_logging(self, config_section):
-        logging_config = {}
-
-        if 'log_level' in config_section:
-            logging_config['level'] = config_section['log_level']
-        else:
-            logging_config['level'] = 'DEBUG'
-
-        if 'log_format' in config_section:
-            logging_config['format'] = config_section['log_format']
-        else:
-            logging_config['format'] = '%(levelname)s %(message)s'
+        if 'logging' in self.config:
+            logging_config.update(dict(self.config['logging']))
 
         logging.basicConfig(**logging_config)
 
-    def _read_programs(self, config):
+    def _load_config_programs(self):
         programs = {}
-        for section_name in config.sections():
+        for section_name in self.config.sections():
             if not section_name.startswith('program:'):
                 continue
 
             prog_id = section_name[len('program:'):]
             if prog_id in programs:
                 log.warn('Duplicate config for program %s', prog_id)
-            section = config[section_name]
+            section = self.config[section_name]
 
             programs[prog_id] = Program(
                 name=section['name'],
                 command=section['command'],
             )
+
+        if 'uroute' in self.config:
+            section = self.config['uroute']
+
+            if 'default_program' in section:
+                self.default_program = section['default_program']
+
         return programs
 
     def get_program(self, prog_id=None):
