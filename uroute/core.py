@@ -48,11 +48,11 @@ class Uroute:
                 command=section['command'],
             )
 
-        if 'uroute' in self.config:
-            section = self.config['uroute']
-
-            if 'default_program' in section:
-                self.default_program = section['default_program']
+        try:
+            self.default_program = self.config['uroute']['default_program']
+        except KeyError:
+            # Config does not specify default program
+            pass
 
         return programs
 

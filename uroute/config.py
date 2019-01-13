@@ -1,5 +1,4 @@
 import os
-from collections import OrderedDict
 from configparser import ConfigParser
 
 
@@ -13,24 +12,24 @@ def create_initial_config(filename):
 
     for browser_name in webbrowser._browsers.keys():
         if browser_name == 'firefox':
-            config['program:firefox'] = OrderedDict((
-                ('name', 'Firefox'),
-                ('command', 'firefox'),
-            ))
-            config['program:firefox-private'] = OrderedDict((
-                ('name', 'Firefox Private Window'),
-                ('command', 'firefox --private-window'),
-            ))
+            config['program:firefox'] = {
+                'name': 'Firefox',
+                'command': 'firefox',
+            }
+            config['program:firefox-private'] = {
+                'name': 'Firefox Private Window',
+                'command': 'firefox --private-window',
+            }
             default_browser = 'firefox-private'
         elif browser_name == 'chromium-browser':
-            config['program:chromium'] = OrderedDict((
-                ('name', 'Chromium'),
-                ('command', 'chromium-browser'),
-            ))
-            config['program:chromium-incognito'] = OrderedDict((
-                ('name', 'Chromium Incognito'),
-                ('command', 'chromium-browser --incognito'),
-            ))
+            config['program:chromium'] = {
+                'name': 'Chromium',
+                'command': 'chromium-browser',
+            }
+            config['program:chromium-incognito'] = {
+                'name': 'Chromium Incognito',
+                'command': 'chromium-browser --incognito',
+            }
 
             if not default_browser:
                 default_browser = 'chromium-incognito'
