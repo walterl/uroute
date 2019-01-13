@@ -49,7 +49,7 @@ class Uroute:
             )
 
         try:
-            self.default_program = self.config['uroute']['default_program']
+            self.default_program = self.config['main']['default_program']
         except KeyError:
             # Config does not specify default program
             pass

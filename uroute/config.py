@@ -35,7 +35,7 @@ def create_initial_config(filename):
                 default_browser = 'chromium-incognito'
 
     if default_browser:
-        config['uroute'] = {'default_program': default_browser}
+        config['main'] = {'default_program': default_browser}
 
     with open(filename, 'w') as config_file:
         config.write(config_file)
@@ -58,3 +58,6 @@ class Config(ConfigParser):
 
         self.clear()
         self.read(filename)
+
+        if not self.has_section('main'):
+            self['main'] = {}
