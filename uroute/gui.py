@@ -61,7 +61,7 @@ class UrouteGui(Gtk.Window):
 
     def _build_ui(self):
         # Init main window
-        self.set_title('Link Dispatcher')
+        self.set_title('Uroute - Link Dispatcher')
         self.set_border_width(10)
         self.set_default_size(600, 300)
         self.connect('destroy', self._on_cancel_clicked)
