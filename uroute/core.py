@@ -2,6 +2,7 @@ import logging
 import subprocess
 from collections import namedtuple
 
+from uroute import xdgdesktop
 from uroute.config import Config
 
 
@@ -88,3 +89,14 @@ class Uroute:
 
         log.info(repr(run_args))
         subprocess.run(run_args)
+
+    def set_as_default_browser(self):
+        """Installs uroute as the default browser for the current user.
+        """
+        try:
+            return xdgdesktop.install_as_default(
+                xdgdesktop.get_or_create_desktop_file(),
+            )
+        except FileNotFoundError as exc:
+            log.warn('Command not found %s', exc)
+            return False
