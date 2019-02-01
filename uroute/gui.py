@@ -3,7 +3,7 @@ import logging
 
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gdk, Gtk  # noqa
+from gi.repository import Gdk, Gtk, Pango  # noqa
 
 log = logging.getLogger(__name__)
 
@@ -63,18 +63,21 @@ class UrouteGui(Gtk.Window):
         # Init main window
         self.set_title('Link Dispatcher')
         self.set_border_width(10)
-        self.set_default_size(400, 300)
+        self.set_default_size(600, 300)
         self.connect('destroy', self._on_cancel_clicked)
         self.connect('key-press-event', self._on_key_pressed)
 
         vbox = Gtk.VBox(spacing=6)
         self.add(vbox)
 
-        self.url_label = Gtk.Label()
-        self.url_label.set_markup('<tt>{}</tt>'.format(self.uroute.url))
+        mono = Pango.FontDescription('monospace')
+        self.url_entry = Gtk.Entry()
+        self.url_entry.set_text(self.uroute.url)
+        self.url_entry.modify_font(mono)
         self.command_entry = Gtk.Entry()
+        self.command_entry.modify_font(mono)
 
-        vbox.pack_start(self.url_label, False, False, 0)
+        vbox.pack_start(self.url_entry, False, False, 0)
         vbox.pack_start(self._build_browser_list(), True, True, 0)
         vbox.pack_start(self.command_entry, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
@@ -126,6 +129,7 @@ class UrouteGui(Gtk.Window):
 
     def _on_run_clicked(self, _button):
         self.command = self.command_entry.get_text()
+        self.uroute.url = self.url_entry.get_text()
 
         model, sel_iter = self.browser_list.get_selection().get_selected()
         log.debug('Selected browser: %s', model.get_value(sel_iter, 0))
