@@ -38,5 +38,10 @@ setup(
     author='Walter Leibbrandt',
     install_requires=install_requires,
     dependency_links=dependency_links,
-    author_email='uroute wrl co za'
+    author_email='uroute wrl co za',
+    entry_points={
+        'console_scripts': [
+            'uroute = uroute.__main__:main'
+        ]
+    }
 )
