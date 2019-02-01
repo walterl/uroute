@@ -61,3 +61,7 @@ class Config(ConfigParser):
 
         if not self.has_section('main'):
             self['main'] = {}
+
+    def save(self):
+        with open(self.filename, 'w') as config_file:
+            self.write(config_file)
