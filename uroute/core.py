@@ -6,7 +6,7 @@ from uroute import xdgdesktop
 from uroute.config import Config
 
 
-Program = namedtuple('Program', ('name', 'command'))
+Program = namedtuple('Program', ('name', 'command', 'icon'))
 
 log = logging.getLogger(__name__)
 
@@ -47,6 +47,7 @@ class Uroute:
             programs[prog_id] = Program(
                 name=section['name'],
                 command=section['command'],
+                icon=section.get('icon'),
             )
 
         try:
