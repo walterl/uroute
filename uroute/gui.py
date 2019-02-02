@@ -3,7 +3,8 @@ import logging
 
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gdk, Gtk, Pango  # noqa
+from gi.repository import Gdk, GdkPixbuf, Gtk, Pango  # noqa E402
+from gi.repository.GdkPixbuf import Pixbuf  # noqa E402
 
 log = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class UrouteGui(Gtk.Window):
         # Init main window
         self.set_title('Uroute - Link Dispatcher')
         self.set_border_width(10)
-        self.set_default_size(600, 300)
+        self.set_default_size(860, 600)
         self.connect('destroy', self._on_cancel_clicked)
         self.connect('key-press-event', self._on_key_pressed)
 
@@ -78,32 +79,55 @@ class UrouteGui(Gtk.Window):
         self.command_entry.modify_font(mono)
 
         vbox.pack_start(self.url_entry, False, False, 0)
-        vbox.pack_start(self._build_browser_list(), True, True, 0)
+        vbox.pack_start(self._build_browser_buttons(), True, True, 0)
         vbox.pack_start(self.command_entry, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
 
-    def _build_browser_list(self):
-        self.browser_store = Gtk.ListStore(str, str)
+    def _build_browser_buttons(self):
+        self.browser_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, object)
+        iconview = Gtk.IconView.new()
+        iconview.set_model(self.browser_store)
+        iconview.set_pixbuf_column(0)
+        iconview.set_text_column(1)
+        iconview.connect('item-activated', self._on_browser_icon_activated)
+        iconview.connect('selection-changed', self._on_browser_icon_selected)
 
         default_itr = None
         default_program = self.uroute.programs.get(self.uroute.default_program)
 
-        for program in self.uroute.programs.values():
-            itr = self.browser_store.append([program.name, program.command])
+        for i, program in enumerate(self.uroute.programs.values()):
+            icon = None
+            if program.icon:
+                icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
+                if icon.get_width() > 64 or icon.get_height() > 64:
+                    icon = icon.scale_simple(
+                        64, 64, GdkPixbuf.InterpType.BILINEAR,
+                    )
+                if icon is None:
+                    log.warn('Unable to load icon from %s', program.icon)
+
+            if icon is None:
+                icon = Gtk.IconTheme.get_default().load_icon(
+                    'help-about', 64, 0,
+                )
+
+            itr = self.browser_store.append([
+                icon, program.name, program.command, program,
+            ])
             if program is default_program:
+                log.debug(
+                    'Selecting default program: %r',
+                    self.browser_store.get_value(itr, 2),
+                )
                 default_itr = itr
 
-        self.browser_list = Gtk.TreeView(self.browser_store)
-        self.browser_list.append_column(
-            Gtk.TreeViewColumn('Browser', Gtk.CellRendererText(), text=0),
-        )
-
-        selection = self.browser_list.get_selection()
-        selection.connect('changed', self._on_browser_selection_change)
         if default_itr:
-            selection.select_iter(default_itr)
+            iconview.select_path(self.browser_store.get_path(default_itr))
+            self._on_browser_icon_selected(iconview)
 
-        return self.browser_list
+        scroll = Gtk.ScrolledWindow()
+        scroll.add(iconview)
+        return scroll
 
     def _build_button_toolbar(self):
         hbox = Gtk.Box(spacing=6)
@@ -118,9 +142,18 @@ class UrouteGui(Gtk.Window):
 
         return hbox
 
-    def _on_browser_selection_change(self, selection):
-        model, sel_iter = selection.get_selected()
-        self.command_entry.set_text(model.get_value(sel_iter, 1))
+    def _on_browser_icon_activated(self, iconview, path):
+        self._on_run_clicked(None)
+
+    def _on_browser_icon_selected(self, iconview):
+        model = iconview.get_model()
+        paths = iconview.get_selected_items()
+        if not paths:
+            log.debug('No browser selected.')
+            return
+        sel_iter = model.get_iter(paths[0])
+
+        self.command_entry.set_text(model.get_value(sel_iter, 2))
 
     def _on_cancel_clicked(self, _button):
         self.command = None
@@ -131,8 +164,7 @@ class UrouteGui(Gtk.Window):
         self.command = self.command_entry.get_text()
         self.uroute.url = self.url_entry.get_text()
 
-        model, sel_iter = self.browser_list.get_selection().get_selected()
-        log.debug('Selected browser: %s', model.get_value(sel_iter, 0))
+        log.debug('Command: %r, URL: %r', self.command, self.uroute.url)
 
         self.hide()
         Gtk.main_quit()
