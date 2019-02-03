@@ -62,19 +62,18 @@ class Uroute:
         if not self.programs:
             raise ValueError('No programs configured')
 
-        if prog_id is None:
-            if self.preferred_prog:
-                if self.preferred_prog in self.programs:
-                    prog_id = self.preferred_prog
-                else:
-                    log.warn(
-                        'No such program configured: %s', self.preferred_prog,
-                    )
+        if prog_id is None and self.preferred_prog:
+            if self.preferred_prog in self.programs:
+                prog_id = self.preferred_prog
             else:
-                prog_id = self.default_program
+                log.warn(
+                    'No such program configured: %s', self.preferred_prog,
+                )
+        if prog_id is None:
+            prog_id = self.default_program
 
         if not prog_id:
-            return self.programs[self.programs.keys()[0]]
+            return self.programs[tuple(self.programs.keys())[0]]
 
         if prog_id not in self.programs:
             raise ValueError('Unknown program ID: {}'.format(prog_id))
