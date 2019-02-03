@@ -29,7 +29,7 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 
     $ sudo apt install python3-gi
     $ mkvirtualenv -p $(which python3) uroute
-    $ pip install git+https://github.com/user/repo.git
+    $ pip install git+https://github.com/walterl/uroute.git
     $ ln -s /usr/lib/python3/dist-packages/gi $VIRTUAL_ENV/lib/python3.6/site-packages/
 
 
