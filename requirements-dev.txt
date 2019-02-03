@@ -1,0 +1,4 @@
+# Dev/Deployment
+nose
+coverage
+pypi-publisher
