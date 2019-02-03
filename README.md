@@ -5,21 +5,74 @@ Author: Walter Leibbrandt
 
 ## Overview
 
-Route URLs to configured programs/browsers.
+Uroute allows you to easily open an URL in one of your configured browsers or
+-profiles. It enables privacy concious browsing by opening URLs, for example,
+in the Tor browser, with Firefox's *Local* profile, a temporary Iridium
+profile, or Firefox's *VPN* profile.
+
+This program was developed and tested on Ubuntu 18.04 (Bionic).
+
+
+## Features
+
+* [X] Open command-line argument URL in any of the configured external browsers.
+* [X] Detect if Uroute is the default browser, and install it as such.
+* [X] Modify URL before opening it in the selected browser.
+* [X] Modify command-line of configured browser launching it.
+* [ ] Set default browser dynamically, based on URL
+* [ ] GUI for managing configuration
+* [ ] Filter/clean URL before launching browser
+
+
+## Requirements
+
+    $ sudo apt install python3-gi
+
 
 ## Installation
 
-To install use pip:
-
-    $ pip install uroute
-
-
-Or clone the repo:
-
-    $ git clone https://github.com/walterl/uroute.git
-    $ python setup.py install
+    $ mkvirtualenv uroute
+    $ pip install git+https://github.com/user/repo.git
+    $ ln -s /usr/lib/python3/dist-packages/gi $VIRTUAL_ENV/lib/python3.6/site-packages/
 
 ## Usage
 
-    $ uroute-config add --default --name "Firefox Private Window" --run "firefox --no-remote --private-window %u"
     $ uroute https://python.org
+
+
+## Example configuration
+
+    $ cat ~/.uroute.ini
+    [main]
+    default_program = tor-browser
+    ask_default_browser = no
+
+    [program:firefox-local]
+    name = Firefox
+    command = firefox -P Local --private-window
+    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+
+    [program:firefox-vpn]
+    name = Firefox with VPN
+    command = firefox -P VPN --private-window
+    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+
+    [program:brave-incog]
+    name = Brave: Incognito
+    command = brave-browser --incognito
+    icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
+
+    [program:tor-browser]
+    name = Tor browser
+    command = /home/walter/.local/share/tor-browser_en-US/Browser/start-tor-browser --detach
+    icon = /home/walter/.local/share/tor-browser_en-US/Browser/browser/chrome/icons/default/default128.png
+
+    [program:iridium-incog]
+    name = Iridium: Incognito
+    command = iridium-browser --incognito
+    icon = /usr/share/icons/hicolor/64x64/apps/iridium-browser.png
+
+    [program:iridium-tor-temp]
+    name = Iridium: Tor, temp profile
+    command = iridium-browser --temp-profile --proxy-server=socks5://127.0.0.1:9050
+    icon = /usr/share/icons/hicolor/64x64/apps/iridium-browser.png
