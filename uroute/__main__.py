@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from uroute import Uroute
+from uroute.core import Uroute
 from uroute.gui import UrouteGui
 
 log = logging.getLogger(__name__)
