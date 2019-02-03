@@ -11,6 +11,19 @@ This program was developed for and tested on Ubuntu 18.04 (Bionic). It should
 work in other Freedesktop environments with Python 3 and GTK 3 installed.
 
 
+## Installation
+
+    $ sudo apt install python3-gi
+    $ mkvirtualenv -p $(which python3) uroute
+    $ pip install git+https://github.com/walterl/uroute.git
+    $ ln -s /usr/lib/python3/dist-packages/gi $VIRTUAL_ENV/lib/python3.6/site-packages/
+
+
+## Usage
+
+    $ uroute https://fsf.org
+
+
 ## Features
 
 * [X] Open command-line argument URL in any of the configured external browsers.
@@ -23,19 +36,6 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 * [ ] Import configuration from installed browsers' XDG desktop entries
   * [ ] Remove tracking parameters
   * [ ] Automatically unshorten links
-
-
-## Installation
-
-    $ sudo apt install python3-gi
-    $ mkvirtualenv -p $(which python3) uroute
-    $ pip install git+https://github.com/walterl/uroute.git
-    $ ln -s /usr/lib/python3/dist-packages/gi $VIRTUAL_ENV/lib/python3.6/site-packages/
-
-
-## Usage
-
-    $ uroute https://fsf.org
 
 
 ## Example configuration
