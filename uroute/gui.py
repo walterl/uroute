@@ -95,23 +95,9 @@ class UrouteGui(Gtk.Window):
         default_program = self.uroute.get_program()
 
         for i, program in enumerate(self.uroute.programs.values()):
-            icon = None
-            if program.icon:
-                icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
-                if icon.get_width() > 64 or icon.get_height() > 64:
-                    icon = icon.scale_simple(
-                        64, 64, GdkPixbuf.InterpType.BILINEAR,
-                    )
-                if icon is None:
-                    log.warn('Unable to load icon from %s', program.icon)
-
-            if icon is None:
-                icon = Gtk.IconTheme.get_default().load_icon(
-                    'help-about', 64, 0,
-                )
-
             itr = self.browser_store.append([
-                icon, program.name, program.command, program,
+                self._load_program_icon(program), program.name,
+                program.command, program,
             ])
             if program is default_program:
                 log.debug(
@@ -127,6 +113,23 @@ class UrouteGui(Gtk.Window):
         scroll = Gtk.ScrolledWindow()
         scroll.add(iconview)
         return scroll
+
+    def _load_program_icon(self, program):
+        icon = None
+        if program.icon:
+            icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
+            if icon.get_width() > 64 or icon.get_height() > 64:
+                icon = icon.scale_simple(
+                    64, 64, GdkPixbuf.InterpType.BILINEAR,
+                )
+            if icon is None:
+                log.warn('Unable to load icon from %s', program.icon)
+
+        if icon is None:
+            icon = Gtk.IconTheme.get_default().load_icon(
+                'help-about', 64, 0,
+            )
+        return icon
 
     def _build_button_toolbar(self):
         hbox = Gtk.Box(spacing=6)
