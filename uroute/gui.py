@@ -93,7 +93,7 @@ class UrouteGui(Gtk.Window):
         iconview.connect('selection-changed', self._on_browser_icon_selected)
 
         default_itr = None
-        default_program = self.uroute.programs.get(self.uroute.default_program)
+        default_program = self.uroute.get_program()
 
         for i, program in enumerate(self.uroute.programs.values()):
             icon = None

@@ -12,9 +12,10 @@ log = logging.getLogger(__name__)
 
 
 class Uroute:
-    def __init__(self, url):
+    def __init__(self, url, preferred_prog=None):
         self.url = url
         self.default_program = None
+        self.preferred_prog = preferred_prog
 
         # Load config
         self.config = Config()
@@ -62,7 +63,15 @@ class Uroute:
             raise ValueError('No programs configured')
 
         if prog_id is None:
-            prog_id = self.default_program
+            if self.preferred_prog:
+                if self.preferred_prog in self.programs:
+                    prog_id = self.preferred_prog
+                else:
+                    log.warn(
+                        'No such program configured: %s', self.preferred_prog,
+                    )
+            else:
+                prog_id = self.default_program
 
         if not prog_id:
             return self.programs[self.programs.keys()[0]]

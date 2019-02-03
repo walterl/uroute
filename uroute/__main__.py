@@ -13,9 +13,8 @@ def create_argument_parser():
     )
 
     parser.add_argument('URL', help='URL to route.')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '--program', '-p', help='The program to open the URL with.',
+    parser.add_argument(
+        '--program', '-p', help='Preselect the specified program.',
     )
 
     return parser
@@ -23,7 +22,7 @@ def create_argument_parser():
 
 def main():
     options = create_argument_parser().parse_args()
-    ur = Uroute(options.URL)
+    ur = Uroute(options.URL, preferred_prog=options.program)
 
     try:
         command = UrouteGui(ur).run()
