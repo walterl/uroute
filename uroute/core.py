@@ -86,7 +86,6 @@ class Uroute:
         if self.url not in run_args:
             run_args.append(self.url)
 
-        log.info(repr(run_args))
         subprocess.run(run_args)
 
     def set_as_default_browser(self):
