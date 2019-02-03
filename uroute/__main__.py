@@ -29,7 +29,7 @@ def main():
         if command:
             ur.run_with_url(command)
     except Exception as error:
-        log.error(str(error))
+        log.exception(str(error))
         exit(1)
 
 
