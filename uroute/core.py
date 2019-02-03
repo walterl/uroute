@@ -23,7 +23,7 @@ class Uroute:
 
     def _init_logging(self):
         logging_config = {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'format': '%(levelname)s %(message)s',
         }
 
