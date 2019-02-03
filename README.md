@@ -1,7 +1,4 @@
-# URL router utility
-
-Version number: 0.0.1
-Author: Walter Leibbrandt
+# Uroute: Route URLs to configured browsers
 
 ## Overview
 
@@ -10,7 +7,8 @@ Uroute allows you to easily open an URL in one of your configured browsers or
 in the Tor browser, with Firefox's *Local* profile, a temporary Iridium
 profile, or Firefox's *VPN* profile.
 
-This program was developed and tested on Ubuntu 18.04 (Bionic).
+This program was developed for and tested on Ubuntu 18.04 (Bionic). It should
+work in other Freedesktop environments with Python 3 and GTK 3 installed.
 
 
 ## Features
@@ -19,25 +17,25 @@ This program was developed and tested on Ubuntu 18.04 (Bionic).
 * [X] Detect if Uroute is the default browser, and install it as such.
 * [X] Modify URL before opening it in the selected browser.
 * [X] Modify command-line of configured browser launching it.
+* [ ] Filter/clean URL before launching browser
 * [ ] Set default browser dynamically, based on URL
 * [ ] GUI for managing configuration
-* [ ] Filter/clean URL before launching browser
-
-
-## Requirements
-
-    $ sudo apt install python3-gi
+* [ ] Import configuration from installed browsers' XDG desktop entries
+  * [ ] Remove tracking parameters
+  * [ ] Automatically unshorten links
 
 
 ## Installation
 
-    $ mkvirtualenv uroute
+    $ sudo apt install python3-gi
+    $ mkvirtualenv -p $(which python3) uroute
     $ pip install git+https://github.com/user/repo.git
     $ ln -s /usr/lib/python3/dist-packages/gi $VIRTUAL_ENV/lib/python3.6/site-packages/
 
+
 ## Usage
 
-    $ uroute https://python.org
+    $ uroute https://fsf.org
 
 
 ## Example configuration
@@ -45,7 +43,6 @@ This program was developed and tested on Ubuntu 18.04 (Bionic).
     $ cat ~/.uroute.ini
     [main]
     default_program = tor-browser
-    ask_default_browser = no
 
     [program:firefox-local]
     name = Firefox
@@ -53,7 +50,7 @@ This program was developed and tested on Ubuntu 18.04 (Bionic).
     icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
 
     [program:firefox-vpn]
-    name = Firefox with VPN
+    name = Firefox: VPN
     command = firefox -P VPN --private-window
     icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
 
