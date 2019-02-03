@@ -20,14 +20,13 @@ def create_argument_parser():
     group.add_argument(
         '--gui', '-g', action='store_true', help='Select program in GTK UI.',
     )
-    parser.add_argument('--verbose', '-v', action='count', default=0)
 
     return parser
 
 
 def main():
     options = create_argument_parser().parse_args()
-    ur = Uroute(options.URL, verbose=options.verbose)
+    ur = Uroute(options.URL)
 
     try:
         if options.gui:

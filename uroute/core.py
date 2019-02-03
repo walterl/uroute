@@ -12,9 +12,8 @@ log = logging.getLogger(__name__)
 
 
 class Uroute:
-    def __init__(self, url, verbose=False):
+    def __init__(self, url):
         self.url = url
-        self.verbose = verbose
         self.default_program = None
 
         # Load config
@@ -78,8 +77,7 @@ class Uroute:
         return program.command
 
     def run_with_url(self, command):
-        if self.verbose > 0:
-            log.debug('Routing URL %s to command: %s', self.url, command)
+        log.debug('Routing URL %s to command: %s', self.url, command)
 
         run_args = [
             arg == '@URL' and self.url or arg for arg in command.split()
