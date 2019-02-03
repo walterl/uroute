@@ -4,7 +4,6 @@ import logging
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gdk, GdkPixbuf, Gtk, Pango  # noqa E402
-from gi.repository.GdkPixbuf import Pixbuf  # noqa E402
 
 log = logging.getLogger(__name__)
 
