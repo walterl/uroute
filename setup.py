@@ -6,9 +6,19 @@ from uroute.__version__ import version
 
 here = path.abspath(path.dirname(__file__))
 
-# Get the long description from the README file
+# Get the long description from the README file's "Overview" section
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
+    in_overview_section = False
+    lines = []
+    for line in f.read().split('\n'):
+        if not in_overview_section and line.startswith('## Overview'):
+            in_overview_section = True
+            continue
+        if in_overview_section:
+            if line.startswith('##'):
+                break
+            lines.append(line)
+    long_description = '\n'.join(lines).strip()
 
 # get the dependencies and installs
 with open(path.join(here, 'requirements.txt'), encoding='utf-8') as f:
