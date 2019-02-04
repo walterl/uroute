@@ -20,7 +20,7 @@ def get_or_create_desktop_file():
         desktop.set('Version', '1.0')
         desktop.set('Name', 'Uroute')
         desktop.set('Comment', 'URL router.')
-        desktop.set('Exec', 'uroute -g %U')
+        desktop.set('Exec', 'uroute %U')
         desktop.set('StartupNotify', 'true')
         desktop.set('Terminal', 'false')
         desktop.set('Categories', 'Network;WebBrowser;')
