@@ -15,28 +15,30 @@ browsers, in any supported mode or profile.
 
 The configuration for the scenario in the screenshot above looks like this:
 
-    [main]
-    default_program = brave-incognito
+```ini
+[main]
+default_program = brave-incognito
 
-    [program:tor-browser]
-    name = Tor Browser
-    command = /home/user/tor-browser_en-US/Browser/start-tor-browser
-    icon = /home/user/tor-browser_en-US/Browser/browser/chrome/icons/default/default128.png
+[program:tor-browser]
+name = Tor Browser
+command = /home/user/tor-browser_en-US/Browser/start-tor-browser
+icon = /home/user/tor-browser_en-US/Browser/browser/chrome/icons/default/default128.png
 
-    [program:brave-incognito]
-    name = Brave: Incognito
-    command = brave-browser --incognito
-    icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
+[program:brave-incognito]
+name = Brave: Incognito
+command = brave-browser --incognito
+icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
 
-    [program:firefox-local]
-    name = Firefox Local
-    command = firefox --class firefox-profile-local -P Local --private-window
-    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+[program:firefox-local]
+name = Firefox Local
+command = firefox --class firefox-profile-local -P Local --private-window
+icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
 
-    [program:firefox-vpn]
-    name = Firefox VPN
-    command = firefox --class firefox-profile-vpn -P VPN --private-window
-    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+[program:firefox-vpn]
+name = Firefox VPN
+command = firefox --class firefox-profile-vpn -P VPN --private-window
+icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+```
 
 See the [Configuration](#configuration) section below for more details.
 
@@ -108,10 +110,12 @@ be of the form `program:some-browser`, where `some-program` is the browser's
 *program ID*. The *program ID* can be used to set the `default_program` in the
 `main` section.
 
-    [program:brave-incognito]
-    name = Brave: Incognito
-    command = brave-browser --incognito
-    icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
+```ini
+[program:brave-incognito]
+name = Brave: Incognito
+command = brave-browser --incognito
+icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
+```
 
 Here `brave-incognito` is called the *program ID*.
 
