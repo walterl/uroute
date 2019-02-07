@@ -11,6 +11,8 @@ installed, with Firefox profiles *Local* (for LAN sites) and *VPN*. With Uroute
 as your default browser, you can open each clicked URL in any of those
 browsers, in any supported mode or profile.
 
+![Screenshot](resources/screenshot.png)
+
 This program was developed for and tested on Ubuntu 18.04 (Bionic). It should
 work in other Freedesktop environments with Python 3 and GTK 3 installed.
 
