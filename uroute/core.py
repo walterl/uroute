@@ -54,7 +54,7 @@ class Uroute:
             self.default_program = self.config['main']['default_program']
         except KeyError:
             # Config does not specify default program
-            pass
+            self.default_program = None
 
         return programs
 
