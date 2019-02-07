@@ -34,6 +34,10 @@ def create_initial_config(filename):
                 'name': 'Chromium Incognito',
                 'command': 'chromium-browser --incognito',
             }
+            config['program:chromium-temp'] = {
+                'name': 'Chromium Temp Profile',
+                'command': 'chromium-browser --temp-profile',
+            }
 
             if not default_browser:
                 default_browser = 'chromium-incognito'
