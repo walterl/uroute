@@ -35,7 +35,7 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 * [ ] GUI for managing configuration
 * [ ] Import configuration from installed browsers' XDG desktop entries
   * [ ] Remove tracking parameters
-  * [ ] Automatically unshorten links
+  * [ ] Automatically unshorten short URLs
 
 
 ## Example configuration
