@@ -38,7 +38,7 @@ The configuration for the scenario in the screenshot above looks like this:
     command = firefox --class firefox-profile-vpn -P VPN --private-window
     icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
 
-See the [Configuration](#Configuration) section below for more details.
+See the [Configuration](#configuration) section below for more details.
 
 This program was developed for and tested on Ubuntu 18.04 (Bionic). It should
 work in other Freedesktop environments with Python 3 and GTK 3 installed.
@@ -87,7 +87,7 @@ for each configured browser.
 The following keys are supported:
 
 * `default_program`: Set the value to a *program ID* of a configured browser.
-    See [Program sections](#Program sections) below.
+    See [Program sections](#program-sections) below.
 * `ask_default_browser`: Set to `no` to avoid being asked to set Uroute as the
     default browser. This is set automatically after prompt was displayed to
     the user.
