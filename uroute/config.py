@@ -1,8 +1,12 @@
 import os
 from configparser import ConfigParser
 
+from xdg import BaseDirectory
 
-DEFAULT_CONFIG = os.path.expanduser('~/.uroute.ini')
+
+DEFAULT_CONFIG = os.path.join(
+    BaseDirectory.xdg_config_home, 'uroute', 'uroute.ini'
+)
 
 
 def create_initial_config(filename):
