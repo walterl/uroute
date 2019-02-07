@@ -13,6 +13,33 @@ browsers, in any supported mode or profile.
 
 ![Screenshot](resources/screenshot.png)
 
+The configuration for the scenario in the screenshot above looks like this:
+
+    [main]
+    default_program = brave-incognito
+
+    [program:tor-browser]
+    name = Tor Browser
+    command = /home/user/tor-browser_en-US/Browser/start-tor-browser
+    icon = /home/user/tor-browser_en-US/Browser/browser/chrome/icons/default/default128.png
+
+    [program:brave-incognito]
+    name = Brave: Incognito
+    command = brave-browser --incognito
+    icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
+
+    [program:firefox-local]
+    name = Firefox Local
+    command = firefox --class firefox-profile-local -P Local --private-window
+    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+
+    [program:firefox-vpn]
+    name = Firefox VPN
+    command = firefox --class firefox-profile-vpn -P VPN --private-window
+    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+
+See the [Configuration](#Configuration) section below for more details.
+
 This program was developed for and tested on Ubuntu 18.04 (Bionic). It should
 work in other Freedesktop environments with Python 3 and GTK 3 installed.
 
@@ -44,38 +71,54 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
   * [ ] Automatically unshorten short URLs
 
 
-## Example configuration
+## Configuration
 
-    $ cat ~/.uroute.ini
-    [main]
-    default_program = tor-browser
+The Uroute configuration file lives in `$XDG_CONFIG_HOME/uroute/uroute.ini`. On
+Ubuntu that is `$HOME/.config/uroute/uroute.ini`.
 
-    [program:firefox-local]
-    name = Firefox
-    command = firefox -P Local --private-window
-    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+It is created automatically, pre-populated with some crude browser detection,
+if that file does not exist.
 
-    [program:firefox-vpn]
-    name = Firefox: VPN
-    command = firefox -P VPN --private-window
-    icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+It contains sections `main`, `logging` and a section prefixed with `program:`
+for each configured browser.
 
-    [program:brave-incog]
+### `main` section
+
+The following keys are supported:
+
+* `default_program`: Set the value to a *program ID* of a configured browser.
+    See [Program sections](#Program sections) below.
+* `ask_default_browser`: Set to `no` to avoid being asked to set Uroute as the
+    default browser. This is set automatically after prompt was displayed to
+    the user.
+
+### `logging` section
+
+**Note:** If you don't know what do you here, you can safely ignore it.
+
+This section is optional, and provides control over the Python logging
+configuration. All keys and values are passed to
+[`logging.basicConfig`](https://docs.python.org/3.6/library/logging.html#logging.basicConfig),
+and should be formatted accordingly.
+
+### Program sections
+
+Each browser should be configured in its own section. The section title should
+be of the form `program:some-browser`, where `some-program` is the browser's
+*program ID*. The *program ID* can be used to set the `default_program` in the
+`main` section.
+
+    [program:brave-incognito]
     name = Brave: Incognito
     command = brave-browser --incognito
     icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
 
-    [program:tor-browser]
-    name = Tor browser
-    command = /home/walter/.local/share/tor-browser_en-US/Browser/start-tor-browser --detach
-    icon = /home/walter/.local/share/tor-browser_en-US/Browser/browser/chrome/icons/default/default128.png
+Here `brave-incognito` is called the *program ID*.
 
-    [program:iridium-incog]
-    name = Iridium: Incognito
-    command = iridium-browser --incognito
-    icon = /usr/share/icons/hicolor/64x64/apps/iridium-browser.png
+`name` is the browser's display name.
 
-    [program:iridium-tor-temp]
-    name = Iridium: Tor, temp profile
-    command = iridium-browser --temp-profile --proxy-server=socks5://127.0.0.1:9050
-    icon = /usr/share/icons/hicolor/64x64/apps/iridium-browser.png
+`command` is the full command to used to launch the browser. You can throw a
+`@URL` value in there, which will be substituted with the URL to open.
+Otherwise the URL is appended automatically.
+
+`icon` is the full path to the display icon.
