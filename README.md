@@ -63,11 +63,12 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 * [X] Modify URL before opening it in the selected browser.
 * [X] Modify command-line of configured browser launching it.
 * [ ] Filter/clean URL before launching browser
+  * [ ] Remove tracking parameters
+  * [ ] Automatically unshorten short URLs
 * [ ] Set default browser dynamically, based on URL
 * [ ] GUI for managing configuration
 * [ ] Import configuration from installed browsers' XDG desktop entries
-  * [ ] Remove tracking parameters
-  * [ ] Automatically unshorten short URLs
+  * [ ] Create a browser configuration for each `[Desktop Action ...]`
 
 
 ## Configuration
