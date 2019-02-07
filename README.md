@@ -3,9 +3,13 @@
 ## Overview
 
 Uroute allows you to easily open an URL in one of your configured browsers or
--profiles. It enables privacy concious browsing by opening URLs, for example,
-in the Tor browser, with Firefox's *Local* profile, a temporary Iridium
-profile, or Firefox's *VPN* profile.
+-profiles.
+
+Suppose you have the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en),
+[Brave](https://brave.com), and [Firefox](https://www.mozilla.org/en-US/firefox/new/)
+installed, with Firefox profiles *Local* (for LAN sites) and *VPN*. With Uroute
+as your default browser, you can open each clicked URL in any of those
+browsers, in any supported mode or profile.
 
 This program was developed for and tested on Ubuntu 18.04 (Bionic). It should
 work in other Freedesktop environments with Python 3 and GTK 3 installed.
