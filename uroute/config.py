@@ -12,6 +12,7 @@ DEFAULT_CONFIG = os.path.join(
 def create_initial_config(filename):
     import webbrowser
     config = ConfigParser()
+    config['main'] = {}  # Just to make sure 'main' is added first
     default_browser = None
 
     for browser_name in webbrowser._browsers.keys():
