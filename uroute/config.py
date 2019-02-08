@@ -1,13 +1,18 @@
 import os
 from configparser import ConfigParser
 
+from xdg import BaseDirectory
 
-DEFAULT_CONFIG = os.path.expanduser('~/.uroute.ini')
+
+DEFAULT_CONFIG = os.path.join(
+    BaseDirectory.xdg_config_home, 'uroute', 'uroute.ini'
+)
 
 
 def create_initial_config(filename):
     import webbrowser
     config = ConfigParser()
+    config['main'] = {}  # Just to make sure 'main' is added first
     default_browser = None
 
     for browser_name in webbrowser._browsers.keys():
@@ -29,6 +34,10 @@ def create_initial_config(filename):
             config['program:chromium-incognito'] = {
                 'name': 'Chromium Incognito',
                 'command': 'chromium-browser --incognito',
+            }
+            config['program:chromium-temp'] = {
+                'name': 'Chromium Temp Profile',
+                'command': 'chromium-browser --temp-profile',
             }
 
             if not default_browser:
