@@ -27,7 +27,8 @@ def get_clipboard_url():
 
 
 def notify(
-    title, msg, icon='info', timeout=Notify.EXPIRES_DEFAULT, actions=None,
+    title, msg, icon='dialog-info', timeout=Notify.EXPIRES_DEFAULT,
+    actions=None,
 ):
     if not Notify.is_initted():
         Notify.init('uroute')
@@ -85,7 +86,7 @@ class UrouteGui(Gtk.Window):
                         'Unable to configure Uroute as your default browser',
                         'Please see the application logs for more '
                         'information.',
-                        icon='error',
+                        icon='dialog-error',
                     )
             else:
                 log.debug("Don't set as default browser")
