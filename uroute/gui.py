@@ -1,13 +1,20 @@
-import gi
 import logging
+from collections import namedtuple
+
+import gi
 
 from uroute.url import extract_url
+from uroute.util import listify
 
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
+
+NotificationAction = namedtuple(
+    'NotificationAction', ('id', 'label', 'callback', 'user_data'),
+)
 
 
 def get_clipboard_url():
@@ -19,12 +26,20 @@ def get_clipboard_url():
     return extract_url(contents)
 
 
-def notify(title, msg, icon='info', timeout=Notify.EXPIRES_DEFAULT):
+def notify(
+    title, msg, icon='info', timeout=Notify.EXPIRES_DEFAULT, actions=None,
+):
     if not Notify.is_initted():
         Notify.init('uroute')
 
     notification = Notify.Notification.new(title, msg, icon=icon)
     notification.set_timeout(timeout)
+
+    for action in listify(actions):
+        notification.add_action(
+            action.id, action.label, action.callback, action.user_data,
+        )
+
     notification.show()
 
 
