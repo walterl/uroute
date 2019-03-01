@@ -80,7 +80,7 @@ class UrouteGui(Gtk.Window):
 
         mono = Pango.FontDescription('monospace')
         self.url_entry = Gtk.Entry()
-        self.url_entry.set_text(self.uroute.url)
+        self.url_entry.set_text(self.uroute.url or '')
         self.url_entry.modify_font(mono)
         self.command_entry = Gtk.Entry()
         self.command_entry.modify_font(mono)
