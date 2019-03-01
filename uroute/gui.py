@@ -1,11 +1,22 @@
 import gi
 import logging
 
+from uroute.url import extract_url
+
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
+
+
+def get_clipboard_url():
+    clipboard = getattr(get_clipboard_url, '_clipboard', None)
+    if clipboard is None:
+        clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        get_clipboard_url._clipboard = clipboard
+    contents = clipboard.wait_for_text()
+    return extract_url(contents)
 
 
 def notify(title, msg, icon='info', timeout=Notify.EXPIRES_DEFAULT):
@@ -23,6 +34,7 @@ class UrouteGui(Gtk.Window):
         self.uroute = uroute
         self.command = None
         self._build_ui()
+        self._check_url()
 
     def run(self):
         self.show_all()
@@ -66,6 +78,13 @@ class UrouteGui(Gtk.Window):
             # Either way, don't ask again
             self.uroute.config['main']['ask_default_browser'] = 'no'
             self.uroute.config.save()
+
+    def _check_url(self):
+        if not self.url_entry.get_text():
+            clipboard_url = get_clipboard_url()
+            if clipboard_url:
+                self.url_entry.set_text(clipboard_url)
+                notify('Using URL from clipboard', clipboard_url)
 
     def _build_ui(self):
         # Init main window
