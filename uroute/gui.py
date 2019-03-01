@@ -3,9 +3,18 @@ import logging
 
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gdk, GdkPixbuf, Gtk, Pango  # noqa E402
+from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
+
+
+def notify(title, msg, icon='info', timeout=Notify.EXPIRES_DEFAULT):
+    if not Notify.is_initted():
+        Notify.init('uroute')
+
+    notification = Notify.Notification.new(title, msg, icon=icon)
+    notification.set_timeout(timeout)
+    notification.show()
 
 
 class UrouteGui(Gtk.Window):
@@ -19,7 +28,12 @@ class UrouteGui(Gtk.Window):
         self.show_all()
         self._check_default_browser()
 
+        Notify.init('uroute')
         Gtk.main()
+
+        if Notify.is_initted():
+            Notify.uninit()
+
         return self.command
 
     def _check_default_browser(self):
@@ -35,23 +49,17 @@ class UrouteGui(Gtk.Window):
             if AskDefaultBrowserDialog(self).run() == Gtk.ResponseType.YES:
                 log.debug('Set as default browser')
                 if self.uroute.set_as_default_browser():
-                    dlg = Gtk.MessageDialog(
-                        self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK,
+                    notify(
+                        'Default browser set',
                         'Uroute is now configured as your default browser.',
                     )
-                    dlg.run()
-                    dlg.destroy()
                 else:
-                    dlg = Gtk.MessageDialog(
-                        self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK,
+                    notify(
                         'Unable to configure Uroute as your default browser',
-                    )
-                    dlg.format_secondary_text(
                         'Please see the application logs for more '
                         'information.',
+                        icon='error',
                     )
-                    dlg.run()
-                    dlg.destroy()
             else:
                 log.debug("Don't set as default browser")
 
