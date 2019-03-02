@@ -16,12 +16,21 @@ def create_argument_parser():
     parser.add_argument(
         '--program', '-p', help='Preselect the specified program.',
     )
+    parser.add_argument(
+        '--version', action='store_true', help='Print version and exit.',
+    )
 
     return parser
 
 
 def main():
     options = create_argument_parser().parse_args()
+
+    if options.version:
+        from uroute.__version__ import version
+        print('Uroute {}'.format(version))
+        exit(0)
+
     ur = Uroute(options.URL, preferred_prog=options.program)
 
     try:
