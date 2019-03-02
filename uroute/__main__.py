@@ -12,7 +12,7 @@ def create_argument_parser():
         description='Route URL to a configured program.',
     )
 
-    parser.add_argument('URL', help='URL to route.')
+    parser.add_argument('URL', nargs='?', help='URL to route.')
     parser.add_argument(
         '--program', '-p', help='Preselect the specified program.',
     )

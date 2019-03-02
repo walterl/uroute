@@ -62,6 +62,7 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 * [X] Detect if Uroute is the default browser, and install it as such.
 * [X] Modify URL before opening it in the selected browser.
 * [X] Modify command-line of configured browser launching it.
+* [X] Extract URL from clipboard contents if no URL was specified.
 * [ ] Filter/clean URL before launching browser
   * [ ] Remove tracking parameters
   * [ ] Automatically unshorten short URLs
@@ -90,6 +91,8 @@ The following keys are supported:
     See [Program sections](#program-sections) below.
 * `ask_default_browser`: Set to `no` to avoid being asked to set Uroute as the
     default browser. This is set automatically after the user was prompted.
+* `read_url_from_clipboard`: Set to `no` to avoid reading URLs from the
+    clipboard, when no URL was specified.
 
 ### `logging` section
 
