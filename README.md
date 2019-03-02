@@ -2,6 +2,8 @@
 
 ## Overview
 
+Uroute is like the "Open URL with..." dialog on Android.
+
 Suppose you have the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en),
 [Brave](https://brave.com), and [Firefox](https://www.mozilla.org/en-US/firefox/new/)
 installed, with Firefox profiles *LAN* and *VPN*. With Uroute as your default
