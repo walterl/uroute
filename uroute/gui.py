@@ -8,6 +8,7 @@ from uroute.util import listify
 
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
+gi.require_version('Notify', '0.7')
 from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
