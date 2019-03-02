@@ -42,6 +42,7 @@ def notify(
         )
 
     notification.show()
+    return notification
 
 
 class UrouteGui(Gtk.Window):
@@ -74,13 +75,16 @@ class UrouteGui(Gtk.Window):
             ask = True
 
         if ask:
-            if AskDefaultBrowserDialog(self).run() == Gtk.ResponseType.YES:
-                log.debug('Set as default browser')
+            def set_default_browser(notif, action, user_data):
+                notif.close()
                 if self.uroute.set_as_default_browser():
                     notify(
                         'Default browser set',
                         'Uroute is now configured as your default browser.',
                     )
+                    # Don't ask again
+                    self.uroute.config['main']['ask_default_browser'] = 'no'
+                    self.uroute.config.save()
                 else:
                     notify(
                         'Unable to configure Uroute as your default browser',
@@ -88,12 +92,29 @@ class UrouteGui(Gtk.Window):
                         'information.',
                         icon='dialog-error',
                     )
-            else:
-                log.debug("Don't set as default browser")
 
-            # Either way, don't ask again
-            self.uroute.config['main']['ask_default_browser'] = 'no'
-            self.uroute.config.save()
+            def dont_set_default_browser(notif, action, user_data):
+                log.debug("Don't set as default browser")
+                notif.close()
+                # Don't ask again
+                self.uroute.config['main']['ask_default_browser'] = 'no'
+                self.uroute.config.save()
+
+            self._default_browser_notif = notify(
+                'Set as default browser?',
+                'Do you want to set Uroute as your default browser?',
+                icon='dialog-question',
+                actions=[
+                    NotificationAction(
+                        'default-browser-yes', 'Yes', set_default_browser,
+                        None,
+                    ),
+                    NotificationAction(
+                        'default-browser-no', 'No', dont_set_default_browser,
+                        None,
+                    ),
+                ],
+            )
 
     def _check_url(self):
         if not self.url_entry.get_text():
@@ -219,26 +240,3 @@ class UrouteGui(Gtk.Window):
             self._on_cancel_clicked(None)
         if event.keyval == Gdk.KEY_Return:
             self._on_run_clicked(None)
-
-
-class AskDefaultBrowserDialog(Gtk.Dialog):
-    def __init__(self, parent):
-        super(AskDefaultBrowserDialog, self).__init__(
-            'Default browser', parent, 0, (
-                Gtk.STOCK_NO, Gtk.ResponseType.NO,
-                Gtk.STOCK_YES, Gtk.ResponseType.YES,
-            )
-        )
-
-        self.set_default_size(150, 100)
-
-        self.get_content_area().add(Gtk.Label(
-            'Do you want to set Uroute as your default browser?',
-        ))
-
-    def run(self):
-        self.show_all()
-        response = super(AskDefaultBrowserDialog, self).run()
-        self.hide()
-        self.destroy()
-        return response
