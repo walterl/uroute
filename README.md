@@ -90,6 +90,8 @@ The following keys are supported:
     See [Program sections](#program-sections) below.
 * `ask_default_browser`: Set to `no` to avoid being asked to set Uroute as the
     default browser. This is set automatically after the user was prompted.
+* `read_url_from_clipboard`: Set to `no` to avoid reading URLs from the
+    clipboard, when no URL was specified.
 
 ### `logging` section
 

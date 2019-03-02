@@ -109,7 +109,8 @@ class UrouteGui(Gtk.Window):
             )
 
     def _check_url(self):
-        if not self.url_entry.get_text():
+        if not self.url_entry.get_text() \
+                and self.uroute.config.read_bool('read_url_from_clipboard'):
             clipboard_url = get_clipboard_url()
             if clipboard_url:
                 self.url_entry.set_text(clipboard_url)
