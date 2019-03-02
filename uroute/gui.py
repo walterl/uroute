@@ -1,11 +1,48 @@
-import gi
 import logging
+from collections import namedtuple
+
+import gi
+
+from uroute.url import extract_url
+from uroute.util import listify
 
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gdk, GdkPixbuf, Gtk, Pango  # noqa E402
+from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
+
+NotificationAction = namedtuple(
+    'NotificationAction', ('id', 'label', 'callback', 'user_data'),
+)
+
+
+def get_clipboard_url():
+    clipboard = getattr(get_clipboard_url, '_clipboard', None)
+    if clipboard is None:
+        clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        get_clipboard_url._clipboard = clipboard
+    contents = clipboard.wait_for_text()
+    return extract_url(contents)
+
+
+def notify(
+    title, msg, icon='dialog-info', timeout=Notify.EXPIRES_DEFAULT,
+    actions=None,
+):
+    if not Notify.is_initted():
+        Notify.init('uroute')
+
+    notification = Notify.Notification.new(title, msg, icon=icon)
+    notification.set_timeout(timeout)
+
+    for action in listify(actions):
+        notification.add_action(
+            action.id, action.label, action.callback, action.user_data,
+        )
+
+    notification.show()
+    return notification
 
 
 class UrouteGui(Gtk.Window):
@@ -14,50 +51,68 @@ class UrouteGui(Gtk.Window):
         self.uroute = uroute
         self.command = None
         self._build_ui()
+        self._check_url()
 
     def run(self):
         self.show_all()
         self._check_default_browser()
 
+        Notify.init('uroute')
         Gtk.main()
+
+        if Notify.is_initted():
+            Notify.uninit()
+
         return self.command
 
     def _check_default_browser(self):
-        try:
-            ask = self.uroute.config['main'].getboolean(
-                'ask_default_browser', fallback=True,
-            )
-        except ValueError:
-            self.uroute.config['main']['ask_default_browser'] = 'yes'
-            ask = True
-
-        if ask:
-            if AskDefaultBrowserDialog(self).run() == Gtk.ResponseType.YES:
-                log.debug('Set as default browser')
+        if self.uroute.config.read_bool('ask_default_browser'):
+            def set_default_browser(notif, action, user_data):
+                notif.close()
                 if self.uroute.set_as_default_browser():
-                    dlg = Gtk.MessageDialog(
-                        self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK,
+                    notify(
+                        'Default browser set',
                         'Uroute is now configured as your default browser.',
                     )
-                    dlg.run()
-                    dlg.destroy()
+                    # Don't ask again
+                    self.uroute.config.write_bool('ask_default_browser', 'no')
                 else:
-                    dlg = Gtk.MessageDialog(
-                        self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK,
+                    notify(
                         'Unable to configure Uroute as your default browser',
-                    )
-                    dlg.format_secondary_text(
                         'Please see the application logs for more '
                         'information.',
+                        icon='dialog-error',
                     )
-                    dlg.run()
-                    dlg.destroy()
-            else:
-                log.debug("Don't set as default browser")
 
-            # Either way, don't ask again
-            self.uroute.config['main']['ask_default_browser'] = 'no'
-            self.uroute.config.save()
+            def dont_set_default_browser(notif, action, user_data):
+                log.debug("Don't set as default browser")
+                notif.close()
+                # Don't ask again
+                self.uroute.config.write_bool('ask_default_browser', 'no')
+
+            self._default_browser_notif = notify(
+                'Set as default browser?',
+                'Do you want to set Uroute as your default browser?',
+                icon='dialog-question',
+                actions=[
+                    NotificationAction(
+                        'default-browser-yes', 'Yes', set_default_browser,
+                        None,
+                    ),
+                    NotificationAction(
+                        'default-browser-no', 'No', dont_set_default_browser,
+                        None,
+                    ),
+                ],
+            )
+
+    def _check_url(self):
+        if not self.url_entry.get_text() \
+                and self.uroute.config.read_bool('read_url_from_clipboard'):
+            clipboard_url = get_clipboard_url()
+            if clipboard_url:
+                self.url_entry.set_text(clipboard_url)
+                notify('Using URL from clipboard', clipboard_url)
 
     def _build_ui(self):
         # Init main window
@@ -72,7 +127,7 @@ class UrouteGui(Gtk.Window):
 
         mono = Pango.FontDescription('monospace')
         self.url_entry = Gtk.Entry()
-        self.url_entry.set_text(self.uroute.url)
+        self.url_entry.set_text(self.uroute.url or '')
         self.url_entry.modify_font(mono)
         self.command_entry = Gtk.Entry()
         self.command_entry.modify_font(mono)
@@ -176,26 +231,3 @@ class UrouteGui(Gtk.Window):
             self._on_cancel_clicked(None)
         if event.keyval == Gdk.KEY_Return:
             self._on_run_clicked(None)
-
-
-class AskDefaultBrowserDialog(Gtk.Dialog):
-    def __init__(self, parent):
-        super(AskDefaultBrowserDialog, self).__init__(
-            'Default browser', parent, 0, (
-                Gtk.STOCK_NO, Gtk.ResponseType.NO,
-                Gtk.STOCK_YES, Gtk.ResponseType.YES,
-            )
-        )
-
-        self.set_default_size(150, 100)
-
-        self.get_content_area().add(Gtk.Label(
-            'Do you want to set Uroute as your default browser?',
-        ))
-
-    def run(self):
-        self.show_all()
-        response = super(AskDefaultBrowserDialog, self).run()
-        self.hide()
-        self.destroy()
-        return response
