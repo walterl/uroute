@@ -71,6 +71,15 @@ class Config(ConfigParser):
         if not self.has_section('main'):
             self['main'] = {}
 
+    def read_bool(self, setting, section='main', default=True):
+        try:
+            value = self[section].getboolean(setting, fallback=default)
+        except ValueError:
+            self.uroute.config[section][setting] = 'yes' if default else 'no'
+            value = default
+
+        return value
+
     def save(self):
         with open(self.filename, 'w') as config_file:
             self.write(config_file)

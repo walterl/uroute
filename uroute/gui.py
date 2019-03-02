@@ -66,15 +66,7 @@ class UrouteGui(Gtk.Window):
         return self.command
 
     def _check_default_browser(self):
-        try:
-            ask = self.uroute.config['main'].getboolean(
-                'ask_default_browser', fallback=True,
-            )
-        except ValueError:
-            self.uroute.config['main']['ask_default_browser'] = 'yes'
-            ask = True
-
-        if ask:
+        if self.uroute.config.read_bool('ask_default_browser'):
             def set_default_browser(notif, action, user_data):
                 notif.close()
                 if self.uroute.set_as_default_browser():
