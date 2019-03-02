@@ -75,8 +75,7 @@ class UrouteGui(Gtk.Window):
                         'Uroute is now configured as your default browser.',
                     )
                     # Don't ask again
-                    self.uroute.config['main']['ask_default_browser'] = 'no'
-                    self.uroute.config.save()
+                    self.uroute.config.write_bool('ask_default_browser', 'no')
                 else:
                     notify(
                         'Unable to configure Uroute as your default browser',
@@ -89,8 +88,7 @@ class UrouteGui(Gtk.Window):
                 log.debug("Don't set as default browser")
                 notif.close()
                 # Don't ask again
-                self.uroute.config['main']['ask_default_browser'] = 'no'
-                self.uroute.config.save()
+                self.uroute.config.write_bool('ask_default_browser', 'no')
 
             self._default_browser_notif = notify(
                 'Set as default browser?',

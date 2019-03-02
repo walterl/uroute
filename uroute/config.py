@@ -83,3 +83,7 @@ class Config(ConfigParser):
     def save(self):
         with open(self.filename, 'w') as config_file:
             self.write(config_file)
+
+    def write_bool(self, setting, value, section='main'):
+        self[section][setting] = value
+        self.save()
