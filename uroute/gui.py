@@ -87,12 +87,16 @@ class UrouteGui(Gtk.Window):
                 url = cleaned_url
 
         if self.orig_url:
-            self.orig_url_hbox.show_all()
-            self.orig_url_label.set_markup('Original: <tt>{}</tt>'.format(
-                GLib.markup_escape_text(self.orig_url),
-            ))
+            self.clean_url_btn.hide()
+            self.restore_url_btn.show()
+            self.restore_url_btn.set_tooltip_markup(
+                'Restore original URL: <tt>{}</tt>'.format(
+                    GLib.markup_escape_text(self.orig_url),
+                ),
+            )
         else:
-            self.orig_url_hbox.hide()
+            self.clean_url_btn.show()
+            self.restore_url_btn.hide()
 
         self.url_entry.set_text(url)
         return url
@@ -182,7 +186,6 @@ class UrouteGui(Gtk.Window):
         command_hbox = self._build_command_hbox()
 
         vbox.pack_start(self._build_url_entry_hbox(), False, False, 0)
-        vbox.pack_start(self._build_orig_url_hbox(), False, False, 0)
         vbox.pack_start(self._build_browser_buttons(), True, True, 0)
         vbox.pack_start(command_hbox, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
@@ -193,25 +196,16 @@ class UrouteGui(Gtk.Window):
         self.url_entry = Gtk.Entry()
         self.url_entry.modify_font(Pango.FontDescription('monospace'))
 
-        clean_url_btn = Gtk.Button.new_with_label('Clean')
-        clean_url_btn.connect('clicked', self._on_clean_url_clicked)
+        self.clean_url_btn = Gtk.Button.new_with_label('Clean')
+        self.clean_url_btn.connect('clicked', self._on_clean_url_clicked)
+        self.restore_url_btn = Gtk.Button.new_with_label('Restore')
+        self.restore_url_btn.connect('clicked', self._on_restore_orig_url)
 
         url_entry_hbox.pack_start(self.url_entry, True, True, 5)
-        url_entry_hbox.pack_start(clean_url_btn, False, False, 0)
+        url_entry_hbox.pack_start(self.clean_url_btn, False, False, 0)
+        url_entry_hbox.pack_start(self.restore_url_btn, False, False, 0)
 
         return url_entry_hbox
-
-    def _build_orig_url_hbox(self):
-        self.orig_url_label = Gtk.Label()
-        self.orig_url_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
-        restore_url_btn = Gtk.Button.new_with_label('Restore')
-        restore_url_btn.connect('clicked', self._on_restore_orig_url)
-
-        self.orig_url_hbox = Gtk.HBox()
-        self.orig_url_hbox.pack_start(self.orig_url_label, False, False, 5)
-        self.orig_url_hbox.pack_start(restore_url_btn, False, False, 0)
-
-        return self.orig_url_hbox
 
     def _build_browser_buttons(self):
         self.browser_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, object)
@@ -305,4 +299,5 @@ class UrouteGui(Gtk.Window):
 
     def _on_window_show(self, _window):
         # Hack required because gtk
-        self.orig_url_hbox.set_visible(bool(self.orig_url))
+        self.clean_url_btn.set_visible(not self.orig_url)
+        self.restore_url_btn.set_visible(bool(self.orig_url))
