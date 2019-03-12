@@ -97,6 +97,7 @@ class UrouteGui(Gtk.Window):
         self.url_entry.set_text(url)
         return url
 
+    # UTILITY METHODS #
     def _check_default_browser(self):
         if self.uroute.config.read_bool('ask_default_browser'):
             def set_default_browser(notif, action, user_data):
@@ -146,6 +147,24 @@ class UrouteGui(Gtk.Window):
                 self.set_url(clipboard_url)
                 notify('Using URL from clipboard', clipboard_url)
 
+    def _load_program_icon(self, program):
+        icon = None
+        if program.icon:
+            icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
+            if icon.get_width() > 64 or icon.get_height() > 64:
+                icon = icon.scale_simple(
+                    64, 64, GdkPixbuf.InterpType.BILINEAR,
+                )
+            if icon is None:
+                log.warn('Unable to load icon from %s', program.icon)
+
+        if icon is None:
+            icon = Gtk.IconTheme.get_default().load_icon(
+                'help-about', 64, 0,
+            )
+        return icon
+
+    # UI BUILDING METHODS #
     def _build_ui(self):
         # Init main window
         self.set_title('Uroute - Link Dispatcher')
@@ -226,23 +245,6 @@ class UrouteGui(Gtk.Window):
         scroll.add(iconview)
         return scroll
 
-    def _load_program_icon(self, program):
-        icon = None
-        if program.icon:
-            icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
-            if icon.get_width() > 64 or icon.get_height() > 64:
-                icon = icon.scale_simple(
-                    64, 64, GdkPixbuf.InterpType.BILINEAR,
-                )
-            if icon is None:
-                log.warn('Unable to load icon from %s', program.icon)
-
-        if icon is None:
-            icon = Gtk.IconTheme.get_default().load_icon(
-                'help-about', 64, 0,
-            )
-        return icon
-
     def _build_command_hbox(self):
         self.command_entry = Gtk.Entry()
         self.command_entry.modify_font(Pango.FontDescription('monospace'))
@@ -261,6 +263,7 @@ class UrouteGui(Gtk.Window):
 
         return hbox
 
+    # EVENT HANDLERS #
     def _on_browser_icon_activated(self, iconview, path):
         self._on_run_clicked(None)
 
