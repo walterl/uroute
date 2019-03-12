@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import gi
 
-from uroute.url import extract_url
+from uroute.url import clean_url, extract_url
 from uroute.util import listify
 
 gi.require_version('Gdk', '3.0')
@@ -51,6 +51,8 @@ class UrouteGui(Gtk.Window):
         super(UrouteGui, self).__init__()
         self.uroute = uroute
         self.command = None
+        self.orig_url = None
+
         self._build_ui()
         self.set_url(self.uroute.url)
         self._check_url()
@@ -71,9 +73,18 @@ class UrouteGui(Gtk.Window):
     def url(self):
         return self.url_entry.get_text()
 
-    def set_url(self, url=None):
+    def set_url(self, url, clean=True):
+        """Sets the given URL in the GUI field, after cleaning it."""
+        self.orig_url = None
+
         if not url and not isinstance(url, str):
             url = ''
+
+        if url and clean:
+            cleaned_url = clean_url(url)
+            if cleaned_url != url:
+                self.orig_url = url
+                url = cleaned_url
 
         self.url_entry.set_text(url)
         return url
