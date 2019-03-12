@@ -52,6 +52,7 @@ class UrouteGui(Gtk.Window):
         self.uroute = uroute
         self.command = None
         self._build_ui()
+        self.set_url(self.uroute.url)
         self._check_url()
 
     def run(self):
@@ -65,6 +66,17 @@ class UrouteGui(Gtk.Window):
             Notify.uninit()
 
         return self.command
+
+    @property
+    def url(self):
+        return self.url_entry.get_text()
+
+    def set_url(self, url=None):
+        if not url and not isinstance(url, str):
+            url = ''
+
+        self.url_entry.set_text(url)
+        return url
 
     def _check_default_browser(self):
         if self.uroute.config.read_bool('ask_default_browser'):
@@ -108,11 +120,11 @@ class UrouteGui(Gtk.Window):
             )
 
     def _check_url(self):
-        if not self.url_entry.get_text() \
+        if not self.url \
                 and self.uroute.config.read_bool('read_url_from_clipboard'):
             clipboard_url = get_clipboard_url()
             if clipboard_url:
-                self.url_entry.set_text(clipboard_url)
+                self.set_url(clipboard_url)
                 notify('Using URL from clipboard', clipboard_url)
 
     def _build_ui(self):
@@ -128,7 +140,6 @@ class UrouteGui(Gtk.Window):
 
         mono = Pango.FontDescription('monospace')
         self.url_entry = Gtk.Entry()
-        self.url_entry.set_text(self.uroute.url or '')
         self.url_entry.modify_font(mono)
         self.command_entry = Gtk.Entry()
         self.command_entry.modify_font(mono)
@@ -220,7 +231,7 @@ class UrouteGui(Gtk.Window):
 
     def _on_run_clicked(self, _button):
         self.command = self.command_entry.get_text()
-        self.uroute.url = self.url_entry.get_text()
+        self.uroute.url = self.url
 
         log.debug('Command: %r, URL: %r', self.command, self.uroute.url)
 
