@@ -10,3 +10,8 @@ def extract_url(contents):
     if match and match.group('url'):
         return match.group('url')
     return None
+
+
+def clean_url(url):
+    # XXX stub
+    return url
