@@ -9,7 +9,7 @@ from uroute.util import listify
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Notify', '0.7')
-from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
+from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
 
@@ -86,6 +86,14 @@ class UrouteGui(Gtk.Window):
                 self.orig_url = url
                 url = cleaned_url
 
+        if self.orig_url:
+            self.orig_url_hbox.show_all()
+            self.orig_url_label.set_markup('Original: <tt>{}</tt>'.format(
+                GLib.markup_escape_text(self.orig_url),
+            ))
+        else:
+            self.orig_url_hbox.hide()
+
         self.url_entry.set_text(url)
         return url
 
@@ -156,9 +164,22 @@ class UrouteGui(Gtk.Window):
         self.command_entry.modify_font(mono)
 
         vbox.pack_start(self.url_entry, False, False, 0)
+        vbox.pack_start(self._build_orig_url_hbox(), False, False, 0)
         vbox.pack_start(self._build_browser_buttons(), True, True, 0)
         vbox.pack_start(self.command_entry, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
+
+    def _build_orig_url_hbox(self):
+        self.orig_url_label = Gtk.Label()
+        self.orig_url_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        restore_url_btn = Gtk.Button.new_with_label('Restore')
+        restore_url_btn.connect('clicked', self._on_restore_orig_url)
+
+        self.orig_url_hbox = Gtk.HBox()
+        self.orig_url_hbox.pack_start(self.orig_url_label, False, False, 5)
+        self.orig_url_hbox.pack_start(restore_url_btn, False, False, 0)
+
+        return self.orig_url_hbox
 
     def _build_browser_buttons(self):
         self.browser_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, object)
@@ -239,6 +260,9 @@ class UrouteGui(Gtk.Window):
         self.command = None
         self.hide()
         Gtk.main_quit()
+
+    def _on_restore_orig_url(self, _button):
+        self.set_url(self.orig_url, clean=False)
 
     def _on_run_clicked(self, _button):
         self.command = self.command_entry.get_text()
