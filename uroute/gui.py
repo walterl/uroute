@@ -151,6 +151,7 @@ class UrouteGui(Gtk.Window):
         self.set_title('Uroute - Link Dispatcher')
         self.set_border_width(10)
         self.set_default_size(860, 600)
+        self.connect('show', self._on_window_show)
         self.connect('destroy', self._on_cancel_clicked)
         self.connect('key-press-event', self._on_key_pressed)
 
@@ -298,3 +299,7 @@ class UrouteGui(Gtk.Window):
             self._on_cancel_clicked(None)
         if event.keyval == Gdk.KEY_Return:
             self._on_run_clicked(None)
+
+    def _on_window_show(self, _window):
+        # Hack required because gtk
+        self.orig_url_hbox.set_visible(bool(self.orig_url))
