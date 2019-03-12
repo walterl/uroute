@@ -157,14 +157,14 @@ class UrouteGui(Gtk.Window):
         vbox = Gtk.VBox(spacing=6)
         self.add(vbox)
 
-        mono = Pango.FontDescription('monospace')
-        self.command_entry = Gtk.Entry()
-        self.command_entry.modify_font(mono)
+        # The command entry needs to exist before creating the browser
+        # buttons, so we create it first.
+        command_hbox = self._build_command_hbox()
 
         vbox.pack_start(self._build_url_entry_hbox(), False, False, 0)
         vbox.pack_start(self._build_orig_url_hbox(), False, False, 0)
         vbox.pack_start(self._build_browser_buttons(), True, True, 0)
-        vbox.pack_start(self.command_entry, False, False, 0)
+        vbox.pack_start(command_hbox, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
 
     def _build_url_entry_hbox(self):
@@ -241,6 +241,11 @@ class UrouteGui(Gtk.Window):
                 'help-about', 64, 0,
             )
         return icon
+
+    def _build_command_hbox(self):
+        self.command_entry = Gtk.Entry()
+        self.command_entry.modify_font(Pango.FontDescription('monospace'))
+        return self.command_entry
 
     def _build_button_toolbar(self):
         hbox = Gtk.Box(spacing=6)
