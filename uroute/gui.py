@@ -158,16 +158,28 @@ class UrouteGui(Gtk.Window):
         self.add(vbox)
 
         mono = Pango.FontDescription('monospace')
-        self.url_entry = Gtk.Entry()
-        self.url_entry.modify_font(mono)
         self.command_entry = Gtk.Entry()
         self.command_entry.modify_font(mono)
 
-        vbox.pack_start(self.url_entry, False, False, 0)
+        vbox.pack_start(self._build_url_entry_hbox(), False, False, 0)
         vbox.pack_start(self._build_orig_url_hbox(), False, False, 0)
         vbox.pack_start(self._build_browser_buttons(), True, True, 0)
         vbox.pack_start(self.command_entry, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
+
+    def _build_url_entry_hbox(self):
+        url_entry_hbox = Gtk.HBox()
+
+        self.url_entry = Gtk.Entry()
+        self.url_entry.modify_font(Pango.FontDescription('monospace'))
+
+        clean_url_btn = Gtk.Button.new_with_label('Clean')
+        clean_url_btn.connect('clicked', self._on_clean_url_clicked)
+
+        url_entry_hbox.pack_start(self.url_entry, True, True, 5)
+        url_entry_hbox.pack_start(clean_url_btn, False, False, 0)
+
+        return url_entry_hbox
 
     def _build_orig_url_hbox(self):
         self.orig_url_label = Gtk.Label()
@@ -260,6 +272,9 @@ class UrouteGui(Gtk.Window):
         self.command = None
         self.hide()
         Gtk.main_quit()
+
+    def _on_clean_url_clicked(self, _button):
+        self.set_url(self.url, clean=True)
 
     def _on_restore_orig_url(self, _button):
         self.set_url(self.orig_url, clean=False)
