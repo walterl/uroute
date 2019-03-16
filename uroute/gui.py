@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import gi
 
-from uroute.url import clean_url, extract_url
+from uroute.url import extract_url
 from uroute.util import listify
 
 gi.require_version('Gdk', '3.0')
@@ -24,7 +24,9 @@ def get_clipboard_url():
         clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         get_clipboard_url._clipboard = clipboard
     contents = clipboard.wait_for_text()
-    return extract_url(contents)
+    if contents:
+        return extract_url(contents)
+    return None
 
 
 def notify(
@@ -81,7 +83,7 @@ class UrouteGui(Gtk.Window):
             url = ''
 
         if url and clean:
-            cleaned_url = clean_url(url)
+            cleaned_url = self.uroute.clean_url(url)
             if cleaned_url != url:
                 self.orig_url = url
                 url = cleaned_url
