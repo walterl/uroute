@@ -70,7 +70,7 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
   * [ ] Automatically unshorten short URLs
 * [ ] Set default browser dynamically, based on URL
 * [ ] GUI for managing configuration
-* [ ] Import configuration from installed browsers' XDG desktop entries
+* [ ] Improve browser detection: import configuration from installed browsers' XDG desktop entries
   * [ ] Create a browser configuration for each `[Desktop Action ...]`
 
 
@@ -90,11 +90,11 @@ for each configured browser.
 The following keys are supported:
 
 * `default_program`: Set the value to a *program ID* of a configured browser.
-    See [Program sections](#program-sections) below.
+  See [Program sections](#program-sections) below.
 * `ask_default_browser`: Set to `no` to avoid being asked to set Uroute as the
-    default browser. This is set automatically after the user was prompted.
+  default browser. This is set automatically after the user was prompted.
 * `read_url_from_clipboard`: Set to `no` to avoid reading URLs from the
-    clipboard, when no URL was specified.
+  clipboard, when no URL was specified.
 
 ### `logging` section
 
