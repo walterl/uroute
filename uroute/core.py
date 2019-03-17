@@ -4,6 +4,7 @@ from collections import namedtuple
 
 from uroute import xdgdesktop
 from uroute.config import Config
+from uroute.url import UrlCleaner
 
 
 Program = namedtuple('Program', ('name', 'command', 'icon'))
@@ -16,6 +17,7 @@ class Uroute:
         self.url = url
         self.default_program = None
         self.preferred_prog = preferred_prog
+        self.url_cleaner = None
 
         # Load config
         self.config = Config()
@@ -58,6 +60,23 @@ class Uroute:
 
         return programs
 
+    def clean_url(self, url):
+        """Cleans the given URL with the configured rules data file.
+
+        The value of ``config['main']['clean_urls_rules_file']`` must
+        point to a valid JSON file, from which rule data will be read.
+
+        :seealso: :class:`uroute.url.UrlCleaner`
+        """
+        if not self.url_cleaner:
+            rules_file = self.config['main'].get('clean_urls_rules_file')
+            if not rules_file:
+                rules_file = xdgdesktop.get_data_file_path('rules.json')
+
+            self.url_cleaner = UrlCleaner(rules_file)
+
+        return self.url_cleaner.clean_url(url)
+
     def get_program(self, prog_id=None):
         if not self.programs:
             raise ValueError('No programs configured')
@@ -97,8 +116,7 @@ class Uroute:
         subprocess.run(run_args)
 
     def set_as_default_browser(self):
-        """Installs uroute as the default browser for the current user.
-        """
+        """Installs Uroute as the default browser for the current user."""
         try:
             return xdgdesktop.install_as_default(
                 xdgdesktop.get_or_create_desktop_file(),

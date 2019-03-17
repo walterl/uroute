@@ -9,7 +9,7 @@ from uroute.util import listify
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Notify', '0.7')
-from gi.repository import Gdk, GdkPixbuf, Gtk, Notify, Pango  # noqa E402
+from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, Notify, Pango  # noqa E402
 
 log = logging.getLogger(__name__)
 
@@ -24,18 +24,24 @@ def get_clipboard_url():
         clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         get_clipboard_url._clipboard = clipboard
     contents = clipboard.wait_for_text()
-    return extract_url(contents)
+    if contents:
+        return extract_url(contents)
+    return None
 
 
 def notify(
-    title, msg, icon='dialog-info', timeout=Notify.EXPIRES_DEFAULT,
-    actions=None,
+    title, msg, icon='dialog-information', timeout=Notify.EXPIRES_DEFAULT,
+    actions=None, transient=False, urgency=Notify.Urgency.NORMAL,
 ):
     if not Notify.is_initted():
         Notify.init('uroute')
 
     notification = Notify.Notification.new(title, msg, icon=icon)
     notification.set_timeout(timeout)
+    notification.set_urgency(urgency)
+
+    if transient:
+        notification.set_hint_byte('transient', 1)
 
     for action in listify(actions):
         notification.add_action(
@@ -51,7 +57,10 @@ class UrouteGui(Gtk.Window):
         super(UrouteGui, self).__init__()
         self.uroute = uroute
         self.command = None
+        self.orig_url = None
+
         self._build_ui()
+        self.set_url(self.uroute.url)
         self._check_url()
 
     def run(self):
@@ -66,6 +75,39 @@ class UrouteGui(Gtk.Window):
 
         return self.command
 
+    @property
+    def url(self):
+        return self.url_entry.get_text()
+
+    def set_url(self, url, clean=True):
+        """Sets the given URL in the GUI field, after cleaning it."""
+        self.orig_url = None
+
+        if not url and not isinstance(url, str):
+            url = ''
+
+        if url and clean:
+            cleaned_url = self.uroute.clean_url(url)
+            if cleaned_url != url:
+                self.orig_url = url
+                url = cleaned_url
+
+        if self.orig_url:
+            self.clean_url_btn.hide()
+            self.restore_url_btn.show()
+            self.restore_url_btn.set_tooltip_markup(
+                'Restore original URL: <tt>{}</tt>'.format(
+                    GLib.markup_escape_text(self.orig_url),
+                ),
+            )
+        else:
+            self.clean_url_btn.show()
+            self.restore_url_btn.hide()
+
+        self.url_entry.set_text(url)
+        return url
+
+    # UTILITY METHODS #
     def _check_default_browser(self):
         if self.uroute.config.read_bool('ask_default_browser'):
             def set_default_browser(notif, action, user_data):
@@ -105,38 +147,74 @@ class UrouteGui(Gtk.Window):
                         None,
                     ),
                 ],
+                urgency=Notify.Urgency.CRITICAL,
             )
 
     def _check_url(self):
-        if not self.url_entry.get_text() \
+        if not self.url \
                 and self.uroute.config.read_bool('read_url_from_clipboard'):
             clipboard_url = get_clipboard_url()
             if clipboard_url:
-                self.url_entry.set_text(clipboard_url)
-                notify('Using URL from clipboard', clipboard_url)
+                self.set_url(clipboard_url)
+                notify(
+                    'Using URL from clipboard', clipboard_url, transient=True,
+                )
 
+    def _load_program_icon(self, program):
+        icon = None
+        if program.icon:
+            icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
+            if icon.get_width() > 64 or icon.get_height() > 64:
+                icon = icon.scale_simple(
+                    64, 64, GdkPixbuf.InterpType.BILINEAR,
+                )
+            if icon is None:
+                log.warn('Unable to load icon from %s', program.icon)
+
+        if icon is None:
+            icon = Gtk.IconTheme.get_default().load_icon(
+                'help-about', 64, 0,
+            )
+        return icon
+
+    # UI BUILDING METHODS #
     def _build_ui(self):
         # Init main window
         self.set_title('Uroute - Link Dispatcher')
         self.set_border_width(10)
         self.set_default_size(860, 600)
+        self.connect('show', self._on_window_show)
         self.connect('destroy', self._on_cancel_clicked)
         self.connect('key-press-event', self._on_key_pressed)
 
         vbox = Gtk.VBox(spacing=6)
         self.add(vbox)
 
-        mono = Pango.FontDescription('monospace')
-        self.url_entry = Gtk.Entry()
-        self.url_entry.set_text(self.uroute.url or '')
-        self.url_entry.modify_font(mono)
-        self.command_entry = Gtk.Entry()
-        self.command_entry.modify_font(mono)
+        # The command entry needs to exist before creating the browser
+        # buttons, so we create it first.
+        command_hbox = self._build_command_hbox()
 
-        vbox.pack_start(self.url_entry, False, False, 0)
+        vbox.pack_start(self._build_url_entry_hbox(), False, False, 0)
         vbox.pack_start(self._build_browser_buttons(), True, True, 0)
-        vbox.pack_start(self.command_entry, False, False, 0)
+        vbox.pack_start(command_hbox, False, False, 0)
         vbox.pack_start(self._build_button_toolbar(), False, False, 0)
+
+    def _build_url_entry_hbox(self):
+        url_entry_hbox = Gtk.HBox()
+
+        self.url_entry = Gtk.Entry()
+        self.url_entry.modify_font(Pango.FontDescription('monospace'))
+
+        self.clean_url_btn = Gtk.Button.new_with_label('Clean')
+        self.clean_url_btn.connect('clicked', self._on_clean_url_clicked)
+        self.restore_url_btn = Gtk.Button.new_with_label('Restore')
+        self.restore_url_btn.connect('clicked', self._on_restore_orig_url)
+
+        url_entry_hbox.pack_start(self.url_entry, True, True, 5)
+        url_entry_hbox.pack_start(self.clean_url_btn, False, False, 0)
+        url_entry_hbox.pack_start(self.restore_url_btn, False, False, 0)
+
+        return url_entry_hbox
 
     def _build_browser_buttons(self):
         self.browser_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, object)
@@ -170,22 +248,10 @@ class UrouteGui(Gtk.Window):
         scroll.add(iconview)
         return scroll
 
-    def _load_program_icon(self, program):
-        icon = None
-        if program.icon:
-            icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
-            if icon.get_width() > 64 or icon.get_height() > 64:
-                icon = icon.scale_simple(
-                    64, 64, GdkPixbuf.InterpType.BILINEAR,
-                )
-            if icon is None:
-                log.warn('Unable to load icon from %s', program.icon)
-
-        if icon is None:
-            icon = Gtk.IconTheme.get_default().load_icon(
-                'help-about', 64, 0,
-            )
-        return icon
+    def _build_command_hbox(self):
+        self.command_entry = Gtk.Entry()
+        self.command_entry.modify_font(Pango.FontDescription('monospace'))
+        return self.command_entry
 
     def _build_button_toolbar(self):
         hbox = Gtk.Box(spacing=6)
@@ -200,6 +266,7 @@ class UrouteGui(Gtk.Window):
 
         return hbox
 
+    # EVENT HANDLERS #
     def _on_browser_icon_activated(self, iconview, path):
         self._on_run_clicked(None)
 
@@ -218,9 +285,15 @@ class UrouteGui(Gtk.Window):
         self.hide()
         Gtk.main_quit()
 
+    def _on_clean_url_clicked(self, _button):
+        self.set_url(self.url, clean=True)
+
+    def _on_restore_orig_url(self, _button):
+        self.set_url(self.orig_url, clean=False)
+
     def _on_run_clicked(self, _button):
         self.command = self.command_entry.get_text()
-        self.uroute.url = self.url_entry.get_text()
+        self.uroute.url = self.url
 
         log.debug('Command: %r, URL: %r', self.command, self.uroute.url)
 
@@ -232,3 +305,8 @@ class UrouteGui(Gtk.Window):
             self._on_cancel_clicked(None)
         if event.keyval == Gdk.KEY_Return:
             self._on_run_clicked(None)
+
+    def _on_window_show(self, _window):
+        # Hack required because gtk
+        self.clean_url_btn.set_visible(not self.orig_url)
+        self.restore_url_btn.set_visible(bool(self.orig_url))
