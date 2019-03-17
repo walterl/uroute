@@ -71,12 +71,12 @@ class Config(ConfigParser):
         if not self.has_section('main'):
             self['main'] = {}
 
-    def read_bool(self, setting, section='main', default=True):
+    def read_bool(self, setting, section='main', fallback=True):
         try:
-            value = self[section].getboolean(setting, fallback=default)
+            value = self[section].getboolean(setting, fallback=fallback)
         except ValueError:
-            self.uroute.config[section][setting] = 'yes' if default else 'no'
-            value = default
+            self.uroute.config[section][setting] = 'yes' if fallback else 'no'
+            value = fallback
 
         return value
 

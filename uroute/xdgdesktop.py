@@ -98,3 +98,29 @@ def which(prog, raise_exception=False):
             raise FileNotFoundError(prog)
         return False
     return True
+
+
+def get_data_file_path(filename):
+    """Returns the full path to the *data file* indicated by `filename`.
+
+    Parent directories will be created where they are missing.
+
+    On Ubuntu, it will act like this:
+
+        >>> get_data_file_path('foo.bar')
+        /home/myuser/.local/share/uroute/foo.bar
+
+    """
+    data_file_name = os.path.join(
+        xdg.BaseDirectory.xdg_data_home, 'uroute', filename,
+    )
+
+    # Ensure that `data_file_name`'s parent directory exists
+    dir_name = os.path.dirname(data_file_name)
+    if not os.path.isdir(dir_name):
+        log.debug(f'Creating dirs: {dir_name}')
+        os.makedirs(dir_name)
+    else:
+        log.debug(f'Data file dir: {dir_name}')
+
+    return data_file_name

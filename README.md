@@ -65,13 +65,20 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 * [X] Modify URL before opening it in the selected browser.
 * [X] Modify command-line of configured browser launching it.
 * [X] Extract URL from clipboard contents if no URL was specified.
-* [ ] Filter/clean URL before launching browser
-  * [ ] Remove tracking parameters
-  * [ ] Automatically unshorten short URLs
+* [X] Filter/clean URL before launching browser
+  * [X] Remove tracking parameters
+  * [X] Automatically unshorten short URLs
 * [ ] Set default browser dynamically, based on URL
 * [ ] GUI for managing configuration
-* [ ] Import configuration from installed browsers' XDG desktop entries
+* [ ] Improve browser detection: import configuration from installed browsers' XDG desktop entries
   * [ ] Create a browser configuration for each `[Desktop Action ...]`
+
+
+## Tips
+
+Assign a keyboard shortcut to Uroute. Opening a URL in Uroute is then as simple
+as copying the URL and launching Uroute via the keyboard shortcut. This is
+especially useful when you want to open a link from one browser in another.
 
 
 ## Configuration
@@ -90,11 +97,16 @@ for each configured browser.
 The following keys are supported:
 
 * `default_program`: Set the value to a *program ID* of a configured browser.
-    See [Program sections](#program-sections) below.
+  See [Program sections](#program-sections) below.
 * `ask_default_browser`: Set to `no` to avoid being asked to set Uroute as the
-    default browser. This is set automatically after the user was prompted.
+  default browser. This is set automatically after the user was prompted.
 * `read_url_from_clipboard`: Set to `no` to avoid reading URLs from the
-    clipboard, when no URL was specified.
+  clipboard, when no URL was specified.
+* `clean_urls_rules_file`: Path to URL cleaning rules file. It defaults to
+  `$XDG_DATA_HOME/uroute/rules.json` (`$HOME/.local/share/uroute/rules.json`).
+  If the file is missing or contains invalid JSON, the ClearURLs
+  [`data.min.js`](https://gitlab.com/KevinRoebert/ClearUrls/blob/master/data/data.min.json)
+  is downloaded.
 
 ### `logging` section
 
@@ -131,3 +143,8 @@ is substituted for the URL to open. If not specified, the URL is appended to
 the end.
 
 `icon` is the full path to the display icon.
+
+
+## Thanks
+
+* [ClearURLs](https://gitlab.com/KevinRoebert/ClearUrls) for its [URL cleaning rules](https://gitlab.com/KevinRoebert/ClearUrls/blob/master/data/data.min.json).
