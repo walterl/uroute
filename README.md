@@ -74,6 +74,13 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
   * [ ] Create a browser configuration for each `[Desktop Action ...]`
 
 
+## Tips
+
+Assign a keyboard shortcut to Uroute. Opening a URL in Uroute is then as simple
+as copying the URL and launching Uroute via the keyboard shortcut. This is
+especially useful when you want to open a link from one browser in another.
+
+
 ## Configuration
 
 The Uroute configuration file lives in `$XDG_CONFIG_HOME/uroute/uroute.ini`. On
