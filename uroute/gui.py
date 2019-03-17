@@ -30,8 +30,8 @@ def get_clipboard_url():
 
 
 def notify(
-    title, msg, icon='dialog-info', timeout=Notify.EXPIRES_DEFAULT,
-    actions=None,
+    title, msg, icon='dialog-information', timeout=Notify.EXPIRES_DEFAULT,
+    actions=None, transient=False,
 ):
     if not Notify.is_initted():
         Notify.init('uroute')
@@ -43,6 +43,9 @@ def notify(
         notification.add_action(
             action.id, action.label, action.callback, action.user_data,
         )
+
+    if transient:
+        notification.set_hint_byte('transient', 1)
 
     notification.show()
     return notification
@@ -151,7 +154,9 @@ class UrouteGui(Gtk.Window):
             clipboard_url = get_clipboard_url()
             if clipboard_url:
                 self.set_url(clipboard_url)
-                notify('Using URL from clipboard', clipboard_url)
+                notify(
+                    'Using URL from clipboard', clipboard_url, transient=True,
+                )
 
     def _load_program_icon(self, program):
         icon = None
