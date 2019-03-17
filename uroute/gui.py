@@ -31,21 +31,22 @@ def get_clipboard_url():
 
 def notify(
     title, msg, icon='dialog-information', timeout=Notify.EXPIRES_DEFAULT,
-    actions=None, transient=False,
+    actions=None, transient=False, urgency=Notify.Urgency.NORMAL,
 ):
     if not Notify.is_initted():
         Notify.init('uroute')
 
     notification = Notify.Notification.new(title, msg, icon=icon)
     notification.set_timeout(timeout)
+    notification.set_urgency(urgency)
+
+    if transient:
+        notification.set_hint_byte('transient', 1)
 
     for action in listify(actions):
         notification.add_action(
             action.id, action.label, action.callback, action.user_data,
         )
-
-    if transient:
-        notification.set_hint_byte('transient', 1)
 
     notification.show()
     return notification
@@ -146,6 +147,7 @@ class UrouteGui(Gtk.Window):
                         None,
                     ),
                 ],
+                urgency=Notify.Urgency.CRITICAL,
             )
 
     def _check_url(self):
