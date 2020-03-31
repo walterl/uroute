@@ -4,7 +4,7 @@ import json
 import logging
 import re
 from urllib.parse import parse_qsl, unquote, urlencode, urlparse, urlunparse
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 log = logging.getLogger(__name__)
 
@@ -108,4 +108,6 @@ class UrlCleaner:
     def download_rules_data(self, save_path=None):
         log.debug('Downloading rules data to %r', save_path)
         with open(save_path, 'w') as rules_file:
-            rules_file.write(urlopen(self.URL_CLEARURLS_DATA).read().decode())
+            request = Request(self.URL_CLEARURLS_DATA,
+                              headers={'User-Agent': 'uroute URLCleaner (python urllib)'})
+            rules_file.write(urlopen(request).read().decode())
