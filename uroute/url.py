@@ -23,13 +23,12 @@ class UrlCleaner:
 
     If the specified rules file path (`rules_path`) does not point to a valid
     JSON file, ClearURLs's `data.min.json
-    <https://gitlab.com/KevinRoebert/ClearUrls/blob/master/data/data.min.json>`_
+    <https://kevinroebert.gitlab.io/ClearUrls/data/data.min.json>`_
     is automatically downloaded and used.
     """
 
     URL_CLEARURLS_DATA = (
-        'https://gitlab.com/KevinRoebert/ClearUrls/raw/master/data/'
-        'data.min.json'
+        'https://kevinroebert.gitlab.io/ClearUrls/data/data.min.json'
     )
 
     def __init__(self, rules_path):
@@ -53,7 +52,7 @@ class UrlCleaner:
         """Clean the given URL with the loaded rules data.
 
         The format of `rules_data` is the parsed JSON found in ClearURLs's
-        [`data.min.json`](https://gitlab.com/KevinRoebert/ClearUrls/blob/master/data/data.min.json)
+        [`data.min.json`](https://kevinroebert.gitlab.io/ClearUrls/data/data.min.json)
         file.
 
         URLs matching a provider's `urlPattern` and one of that provider's
