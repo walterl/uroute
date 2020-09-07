@@ -48,7 +48,7 @@ class UrlCleaner:
                 self.rules_data = json.load(rules_file)
             log.debug('URL cleaning rules loaded from %r', self.rules_path)
 
-    def clean_url(self, url):
+    def clean_url(self, url, loop = True):
         """Clean the given URL with the loaded rules data.
 
         The format of `rules_data` is the parsed JSON found in ClearURLs's
@@ -67,31 +67,37 @@ class UrlCleaner:
             if not re.match(provider['urlPattern'], url, re.IGNORECASE):
                 continue
 
+            # If any exceptions are matched, this provider is skipped
             if any(
                 re.match(exc, url, re.IGNORECASE)
-                for exc in provider['exceptions']
+                for exc in provider.get('exceptions', [])
             ):
                 continue
 
-            for redir in provider['redirections']:
+            # If redirect found, recurse on target (only once)
+            for redir in provider.get('redirections', []):
                 match = re.match(redir, url, re.IGNORECASE)
                 try:
                     if match and match.group(1):
-                        return unquote(match.group(1))
+                        if loop:
+                            return self.clean_url(unquote(match.group(1)),
+                                                  False)
+                        else:
+                            url = unquote(match.group(1))
                 except IndexError:
                     # If we get here, we got a redirection match, but no
                     # matched grouped. The redirection rule is probably
                     # faulty.
                     pass
 
+            # Explode query parameters to be checked against rules
             parsed_url = urlparse(url)
             query_params = parse_qsl(parsed_url.query)
 
-            for rule in provider['rules']:
-                query_params = [
-                    param for param in query_params
-                    if not re.match(rule, param[0])
-                ]
+            for rule in (*provider.get('rules', []),
+                         *provider.get('referralMarketing', [])):
+                query_params = [param for param in query_params
+                                if not re.match(rule, param[0], re.IGNORECASE)]
 
             url = urlunparse((
                 parsed_url.scheme,
@@ -101,6 +107,9 @@ class UrlCleaner:
                 urlencode(query_params),
                 parsed_url.fragment,
             ))
+
+            for raw_rule in provider.get('rawRules', []):
+                url = re.sub(raw_rule, '', url)
 
         return url
 
