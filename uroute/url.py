@@ -94,10 +94,14 @@ class UrlCleaner:
             parsed_url = urlparse(url)
             query_params = parse_qsl(parsed_url.query)
 
-            for rule in (*provider.get('rules', []),
-                         *provider.get('referralMarketing', [])):
-                query_params = [param for param in query_params
-                                if not re.match(rule, param[0], re.IGNORECASE)]
+            for rule in (
+                *provider.get('rules', []),
+                *provider.get('referralMarketing', [])
+            ):
+                query_params = [
+                    param for param in query_params
+                    if not re.match(rule, param[0], re.IGNORECASE)
+                ]
 
             url = urlunparse((
                 parsed_url.scheme,
