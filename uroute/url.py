@@ -48,7 +48,7 @@ class UrlCleaner:
                 self.rules_data = json.load(rules_file)
             log.debug('URL cleaning rules loaded from %r', self.rules_path)
 
-    def clean_url(self, url, loop = True):
+    def clean_url(self, url, loop=True):
         """Clean the given URL with the loaded rules data.
 
         The format of `rules_data` is the parsed JSON found in ClearURLs's
