@@ -79,11 +79,10 @@ class UrlCleaner:
                 match = re.match(redir, url, re.IGNORECASE)
                 try:
                     if match and match.group(1):
+                        url = unquote(match.group(1))
                         if loop:
-                            return self.clean_url(unquote(match.group(1)),
-                                                  False)
-                        else:
-                            url = unquote(match.group(1))
+                            return self.clean_url(url, loop=False)
+                        return url
                 except IndexError:
                     # If we get here, we got a redirection match, but no
                     # matched grouped. The redirection rule is probably
