@@ -63,17 +63,17 @@ class UrlCleaner:
         URL, written by the ClearURLs author, can be found
         [here](https://gitlab.com/KevinRoebert/ClearUrls/snippets/1834899).
         """
-        for provider in self.rules_data['providers'].values():
+        for provider in self.rules_data.get('providers', {}).values():
             if not re.match(provider['urlPattern'], url, re.IGNORECASE):
                 continue
 
             if any(
                 re.match(exc, url, re.IGNORECASE)
-                for exc in provider['exceptions']
+                for exc in provider.get('exceptions', [])
             ):
                 continue
 
-            for redir in provider['redirections']:
+            for redir in provider.get('redirections', []):
                 match = re.match(redir, url, re.IGNORECASE)
                 try:
                     if match and match.group(1):
@@ -87,7 +87,7 @@ class UrlCleaner:
             parsed_url = urlparse(url)
             query_params = parse_qsl(parsed_url.query)
 
-            for rule in provider['rules']:
+            for rule in provider.get('rules', []):
                 query_params = [
                     param for param in query_params
                     if not re.match(rule, param[0])
