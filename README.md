@@ -105,7 +105,7 @@ The following keys are supported:
 * `clean_urls_rules_file`: Path to URL cleaning rules file. It defaults to
   `$XDG_DATA_HOME/uroute/rules.json` (`$HOME/.local/share/uroute/rules.json`).
   If the file is missing or contains invalid JSON, the ClearURLs
-  [`data.min.js`](https://gitlab.com/KevinRoebert/ClearUrls/blob/master/data/data.min.json)
+  [`data.min.js`](https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json)
   is downloaded.
 
 ### `logging` section
@@ -147,4 +147,4 @@ the end.
 
 ## Thanks
 
-* [ClearURLs](https://gitlab.com/KevinRoebert/ClearUrls) for its [URL cleaning rules](https://gitlab.com/KevinRoebert/ClearUrls/blob/master/data/data.min.json).
+* [ClearURLs](https://gitlab.com/KevinRoebert/ClearUrls) for its [URL cleaning rules](https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json).
