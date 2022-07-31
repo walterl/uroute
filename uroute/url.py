@@ -18,110 +18,110 @@ def extract_url(contents):
     return None
 
 
-class UrlCleaner:
-    """Manages and loads URL cleaning data, and uses it to clean URLs.
+URL_CLEARURLS_DATA = 'https://rules2.clearurls.xyz/data.minify.json'
+USER_AGENT = 'uroute URLCleaner (python urllib)'
 
-    If the specified rules file path (`rules_path`) does not point to a valid
-    JSON file, ClearURLs's `data.min.json
+
+def download_rules_data(save_path=None):
+    """Download URL cleaning rules to `save_path`."""
+    log.debug('Downloading rules data to %r', save_path)
+    with open(save_path, 'w') as rules_file:
+        request = Request(URL_CLEARURLS_DATA,
+                          headers={'User-Agent': USER_AGENT})
+        with urlopen(request) as resp:
+            rules_file.write(resp.read().decode())
+
+
+def load_cleaning_rules(rules_path):
+    """Loads URL cleaning data from `rules_path`.
+
+    If the specified rules file path does not point to a valid JSON
+    file, ClearURLs's `data.min.json
     <https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json>`_
-    is automatically downloaded and used.
+    is automatically downloaded and loaded.
     """
+    try:
+        with open(rules_path) as rules_file:
+            rules = json.load(rules_file)
+            log.debug('URL cleaning rules loaded from %r', rules_path)
+        return rules
+    except Exception:
+        # If anything went wrong reading the rules file, redownload
+        # it.
+        download_rules_data(rules_path)
+        with open(rules_path) as rules_file:
+            rules = json.load(rules_file)
+            log.debug('URL cleaning rules loaded from %r', rules_path)
+        return rules
 
-    URL_CLEARURLS_DATA = (
-        'https://rules2.clearurls.xyz/data.minify.json'
-    )
 
-    def __init__(self, rules_path):
-        self.rules_path = rules_path
-        self._init_rules_data()
+def clean_url(rules, url, recurse_redir=True):
+    """Clean the given URL with the loaded rules data.
 
-    def _init_rules_data(self):
-        try:
-            with open(self.rules_path) as rules_file:
-                self.rules_data = json.load(rules_file)
-            log.debug('URL cleaning rules loaded from %r', self.rules_path)
-        except Exception:
-            # If anything went wrong reading the rules file, redownload
-            # it.
-            self.download_rules_data(self.rules_path)
-            with open(self.rules_path) as rules_file:
-                self.rules_data = json.load(rules_file)
-            log.debug('URL cleaning rules loaded from %r', self.rules_path)
+    The format of `rules_data` is the parsed JSON found in ClearURLs's
+    [`data.min.json`](https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json)
+    file.
 
-    def clean_url(self, url, recurse_redir=True):
-        """Clean the given URL with the loaded rules data.
+    URLs matching a provider's `urlPattern` and one of that provider's
+    redirection patterns, will cause the URL to be replaced with the
+    match's first matched group.
 
-        The format of `rules_data` is the parsed JSON found in ClearURLs's
-        [`data.min.json`](https://gitlab.com/ClearURLs/rules/-/blob/master/data.min.json)
-        file.
+    Another Python implementation to download and apply the rules to a
+    URL, written by the ClearURLs author, can be found
+    [here](https://gitlab.com/KevinRoebert/ClearUrls/snippets/1834899).
 
-        URLs matching a provider's `urlPattern` and one of that provider's
-        redirection patterns, will cause the URL to be replaced with the
-        match's first matched group.
+    Set `recurse_redir=False` to prevent cleaning redirect targets
+    recursively.
+    """
+    for provider in rules.get('providers', {}).values():
+        if not re.match(provider['urlPattern'], url, re.IGNORECASE):
+            continue
 
-        Another Python implementation to download and apply the rules to a
-        URL, written by the ClearURLs author, can be found
-        [here](https://gitlab.com/KevinRoebert/ClearUrls/snippets/1834899).
+        # If any exceptions are matched, this provider is skipped
+        if any(
+            re.match(exc, url, re.IGNORECASE)
+            for exc in provider.get('exceptions', [])
+        ):
+            continue
 
-        Set `recurse_redir=False` to prevent cleaning redirect targets
-        recursively.
-        """
-        for provider in self.rules_data.get('providers', {}).values():
-            if not re.match(provider['urlPattern'], url, re.IGNORECASE):
-                continue
+        for redir in provider.get('redirections', []):
+            match = re.match(redir, url, re.IGNORECASE)
+            try:
+                if match and match.group(1) and match.group(1) != url:
+                    url = unquote(match.group(1))
+                    # If redirect found, recurse on target
+                    if recurse_redir:
+                        url = clean_url(rules, url, recurse_redir=True)
+                    return url
+            except IndexError:
+                # If we get here, we got a redirection match, but no
+                # matched grouped. The redirection rule is probably
+                # faulty.
+                pass
 
-            # If any exceptions are matched, this provider is skipped
-            if any(
-                re.match(exc, url, re.IGNORECASE)
-                for exc in provider.get('exceptions', [])
-            ):
-                continue
+        # Explode query parameters to be checked against rules
+        parsed_url = urlparse(url)
+        query_params = parse_qsl(parsed_url.query)
 
-            for redir in provider.get('redirections', []):
-                match = re.match(redir, url, re.IGNORECASE)
-                try:
-                    if match and match.group(1) and match.group(1) != url:
-                        url = unquote(match.group(1))
-                        # If redirect found, recurse on target
-                        if recurse_redir:
-                            url = self.clean_url(url, recurse_redir=True)
-                        return url
-                except IndexError:
-                    # If we get here, we got a redirection match, but no
-                    # matched grouped. The redirection rule is probably
-                    # faulty.
-                    pass
+        for rule in (
+            *provider.get('rules', []),
+            *provider.get('referralMarketing', [])
+        ):
+            query_params = [
+                param for param in query_params
+                if not re.match(rule, param[0], re.IGNORECASE)
+            ]
 
-            # Explode query parameters to be checked against rules
-            parsed_url = urlparse(url)
-            query_params = parse_qsl(parsed_url.query)
+        url = urlunparse((
+            parsed_url.scheme,
+            parsed_url.netloc,
+            parsed_url.path,
+            parsed_url.params,
+            urlencode(query_params),
+            parsed_url.fragment,
+        ))
 
-            for rule in (
-                *provider.get('rules', []),
-                *provider.get('referralMarketing', [])
-            ):
-                query_params = [
-                    param for param in query_params
-                    if not re.match(rule, param[0], re.IGNORECASE)
-                ]
+        for raw_rule in provider.get('rawRules', []):
+            url = re.sub(raw_rule, '', url)
 
-            url = urlunparse((
-                parsed_url.scheme,
-                parsed_url.netloc,
-                parsed_url.path,
-                parsed_url.params,
-                urlencode(query_params),
-                parsed_url.fragment,
-            ))
-
-            for raw_rule in provider.get('rawRules', []):
-                url = re.sub(raw_rule, '', url)
-
-        return url
-
-    def download_rules_data(self, save_path=None):
-        log.debug('Downloading rules data to %r', save_path)
-        with open(save_path, 'w') as rules_file:
-            request = Request(self.URL_CLEARURLS_DATA,
-                              headers={'User-Agent': 'uroute URLCleaner (python urllib)'})
-            rules_file.write(urlopen(request).read().decode())
+    return url

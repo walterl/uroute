@@ -1,10 +1,11 @@
+"""Core logic."""
+
 import logging
 import subprocess
 from collections import namedtuple
 
-from uroute import xdgdesktop
+from uroute import url as u, xdgdesktop
 from uroute.config import Config
-from uroute.url import UrlCleaner
 
 
 Program = namedtuple('Program', ('name', 'command', 'icon'))
@@ -17,7 +18,7 @@ class Uroute:
         self.url = url
         self.default_program = None
         self.preferred_prog = preferred_prog
-        self.url_cleaner = None
+        self.url_cleaning_rules = {}
 
         # Load config
         self.config = Config()
@@ -68,14 +69,13 @@ class Uroute:
 
         :seealso: :class:`uroute.url.UrlCleaner`
         """
-        if not self.url_cleaner:
+        if not self.url_cleaning_rules:
             rules_file = self.config['main'].get('clean_urls_rules_file')
             if not rules_file:
                 rules_file = xdgdesktop.get_data_file_path('rules.json')
+            self.url_cleaning_rules = u.load_cleaning_rules(rules_file)
 
-            self.url_cleaner = UrlCleaner(rules_file)
-
-        return self.url_cleaner.clean_url(url)
+        return u.clean_url(self.url_cleaning_rules, url)
 
     def get_program(self, prog_id=None):
         if not self.programs:
