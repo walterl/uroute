@@ -1,8 +1,10 @@
-from setuptools import setup, find_packages
+"""Setup."""
+
 from codecs import open
 from os import path
+from setuptools import setup, find_packages
 
-from uroute.__version__ import version
+from uroute.__version__ import VERSION
 
 here = path.abspath(path.dirname(__file__))
 
@@ -31,11 +33,11 @@ dependency_links = [
 
 setup(
     name='uroute',
-    version=version,
+    version=VERSION,
     description='Route URLs to configured browsers.',
     long_description=long_description,
     url='https://github.com/walterl/uroute',
-    download_url='https://github.com/walterl/uroute/tarball/' + version,
+    download_url='https://github.com/walterl/uroute/tarball/' + VERSION,
     license='LGPL',
     classifiers=[
         'Development Status :: 3 - Alpha',

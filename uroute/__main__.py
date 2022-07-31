@@ -1,5 +1,8 @@
+"""Main entrypoint."""
+
 import argparse
 import logging
+import sys
 
 from uroute.core import Uroute
 from uroute.gui import UrouteGui
@@ -27,19 +30,21 @@ def main():
     options = create_argument_parser().parse_args()
 
     if options.version:
-        from uroute.__version__ import version
-        print('Uroute {}'.format(version))
-        exit(0)
+        # pylint: disable=import-outside-toplevel
+        from uroute.__version__ import VERSION
+        print(f'Uroute {VERSION}')
+        sys.exit(0)
 
-    ur = Uroute(options.URL, preferred_prog=options.program)
+    ur = Uroute(preferred_prog=options.program)
 
     try:
-        command = UrouteGui(ur).run()
+        command, url = UrouteGui(ur).run(options.URL)
+        log.debug('Command: %r, URL: %r', command, url)
         if command:
-            ur.run_with_url(command)
-    except Exception as error:
+            ur.run(command, url)
+    except Exception as error:  # pylint: disable=broad-except
         log.exception(str(error))
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

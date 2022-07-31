@@ -1,3 +1,6 @@
+"""Utility functions."""
+
+
 def listify(x):
     """Puts ``x`` in a new list if it is not already a list. ``None`` returns
         an empty list."""

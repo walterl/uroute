@@ -1,3 +1,5 @@
+"""Everything GUI-related."""
+
 import logging
 from collections import namedtuple
 
@@ -9,7 +11,8 @@ from uroute.util import listify
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gtk', '3.0')
 gi.require_version('Notify', '0.7')
-from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, Notify, Pango  # noqa E402
+# pylint: disable=wrong-import-order,wrong-import-position
+from gi.repository import Gdk, GdkPixbuf, GLib, Gtk, Notify, Pango
 
 log = logging.getLogger(__name__)
 
@@ -19,9 +22,11 @@ NotificationAction = namedtuple(
 
 
 def get_clipboard_url():
+    """Returns URL from clipboard content, or `None`."""
     clipboard = getattr(get_clipboard_url, '_clipboard', None)
     if clipboard is None:
         clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        # pylint: disable=protected-access
         get_clipboard_url._clipboard = clipboard
     contents = clipboard.wait_for_text()
     if contents:
@@ -29,7 +34,7 @@ def get_clipboard_url():
     return None
 
 
-def notify(
+def notify(  # pylint: disable=too-many-arguments
     title, msg, icon='dialog-information', timeout=Notify.EXPIRES_DEFAULT,
     actions=None, transient=False, urgency=Notify.Urgency.NORMAL,
 ):
@@ -52,18 +57,23 @@ def notify(
     return notification
 
 
-class UrouteGui(Gtk.Window):
+class UrouteGui(Gtk.Window):  # pylint: disable=too-many-instance-attributes
+    """
+    Constructs main GTK GUI and hooks events to `uroute.core.Uroute`
+    functionality.
+    """
+
     def __init__(self, uroute):
-        super(UrouteGui, self).__init__()
+        super().__init__()
         self.uroute = uroute
         self.command = None
         self.orig_url = None
 
         self._build_ui()
-        self.set_url(self.uroute.url)
-        self._check_url()
 
-    def run(self):
+    def run(self, url):
+        self.set_url(url)
+        self._check_clipboard_url()
         self.show_all()
         self._check_default_browser()
 
@@ -73,7 +83,7 @@ class UrouteGui(Gtk.Window):
         if Notify.is_initted():
             Notify.uninit()
 
-        return self.command
+        return (self.command, self.url)
 
     @property
     def url(self):
@@ -95,10 +105,9 @@ class UrouteGui(Gtk.Window):
         if self.orig_url:
             self.clean_url_btn.hide()
             self.restore_url_btn.show()
+            escaped_orig = GLib.markup_escape_text(self.orig_url)
             self.restore_url_btn.set_tooltip_markup(
-                'Restore original URL: <tt>{}</tt>'.format(
-                    GLib.markup_escape_text(self.orig_url),
-                ),
+                f'Restore original URL: <tt>{escaped_orig}</tt>',
             )
         else:
             self.clean_url_btn.show()
@@ -110,7 +119,7 @@ class UrouteGui(Gtk.Window):
     # UTILITY METHODS #
     def _check_default_browser(self):
         if self.uroute.config.read_bool('ask_default_browser'):
-            def set_default_browser(notif, action, user_data):
+            def set_default_browser(notif, _action, _user_data):
                 notif.close()
                 if self.uroute.set_as_default_browser():
                     notify(
@@ -127,13 +136,13 @@ class UrouteGui(Gtk.Window):
                         icon='dialog-error',
                     )
 
-            def dont_set_default_browser(notif, action, user_data):
+            def dont_set_default_browser(notif, _action, _user_data):
                 log.debug("Don't set as default browser")
                 notif.close()
                 # Don't ask again
                 self.uroute.config.write_bool('ask_default_browser', 'no')
 
-            self._default_browser_notif = notify(
+            notify(
                 'Set as default browser?',
                 'Do you want to set Uroute as your default browser?',
                 icon='dialog-question',
@@ -150,7 +159,7 @@ class UrouteGui(Gtk.Window):
                 urgency=Notify.Urgency.CRITICAL,
             )
 
-    def _check_url(self):
+    def _check_clipboard_url(self):
         if not self.url \
                 and self.uroute.config.read_bool('read_url_from_clipboard'):
             clipboard_url = get_clipboard_url()
@@ -164,12 +173,13 @@ class UrouteGui(Gtk.Window):
         icon = None
         if program.icon:
             icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
-            if icon.get_width() > 64 or icon.get_height() > 64:
-                icon = icon.scale_simple(
-                    64, 64, GdkPixbuf.InterpType.BILINEAR,
-                )
             if icon is None:
-                log.warn('Unable to load icon from %s', program.icon)
+                log.warning('Unable to load icon from %s', program.icon)
+            else:
+                if icon.get_width() > 64 or icon.get_height() > 64:
+                    icon = icon.scale_simple(
+                        64, 64, GdkPixbuf.InterpType.BILINEAR,
+                    )
 
         if icon is None:
             icon = Gtk.IconTheme.get_default().load_icon(
@@ -202,11 +212,14 @@ class UrouteGui(Gtk.Window):
     def _build_url_entry_hbox(self):
         url_entry_hbox = Gtk.HBox()
 
+        # pylint: disable=attribute-defined-outside-init
         self.url_entry = Gtk.Entry()
         self.url_entry.modify_font(Pango.FontDescription('monospace'))
 
+        # pylint: disable=attribute-defined-outside-init
         self.clean_url_btn = Gtk.Button.new_with_label('Clean')
         self.clean_url_btn.connect('clicked', self._on_clean_url_clicked)
+        # pylint: disable=attribute-defined-outside-init
         self.restore_url_btn = Gtk.Button.new_with_label('Restore')
         self.restore_url_btn.connect('clicked', self._on_restore_orig_url)
 
@@ -217,6 +230,7 @@ class UrouteGui(Gtk.Window):
         return url_entry_hbox
 
     def _build_browser_buttons(self):
+        # pylint: disable=attribute-defined-outside-init
         self.browser_store = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, object)
         iconview = Gtk.IconView.new()
         iconview.set_model(self.browser_store)
@@ -228,7 +242,7 @@ class UrouteGui(Gtk.Window):
         default_itr = None
         default_program = self.uroute.get_program()
 
-        for i, program in enumerate(self.uroute.programs.values()):
+        for program in self.uroute.programs.values():
             itr = self.browser_store.append([
                 self._load_program_icon(program), program.name,
                 program.command, program,
@@ -249,6 +263,7 @@ class UrouteGui(Gtk.Window):
         return scroll
 
     def _build_command_hbox(self):
+        # pylint: disable=attribute-defined-outside-init
         self.command_entry = Gtk.Entry()
         self.command_entry.modify_font(Pango.FontDescription('monospace'))
         return self.command_entry
@@ -267,7 +282,7 @@ class UrouteGui(Gtk.Window):
         return hbox
 
     # EVENT HANDLERS #
-    def _on_browser_icon_activated(self, iconview, path):
+    def _on_browser_icon_activated(self, _iconview, _path):
         self._on_run_clicked(None)
 
     def _on_browser_icon_selected(self, iconview):
@@ -293,14 +308,10 @@ class UrouteGui(Gtk.Window):
 
     def _on_run_clicked(self, _button):
         self.command = self.command_entry.get_text()
-        self.uroute.url = self.url
-
-        log.debug('Command: %r, URL: %r', self.command, self.uroute.url)
-
         self.hide()
         Gtk.main_quit()
 
-    def _on_key_pressed(self, wnd, event):
+    def _on_key_pressed(self, _wnd, event):
         if event.keyval == Gdk.KEY_Escape:
             self._on_cancel_clicked(None)
         if event.keyval == Gdk.KEY_Return:

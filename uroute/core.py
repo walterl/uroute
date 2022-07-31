@@ -1,10 +1,11 @@
+"""Contains core logic in the `Uroute` class."""
+
 import logging
 import subprocess
 from collections import namedtuple
 
-from uroute import xdgdesktop
+from uroute import url as u, xdgdesktop
 from uroute.config import Config
-from uroute.url import UrlCleaner
 
 
 Program = namedtuple('Program', ('name', 'command', 'icon'))
@@ -13,11 +14,12 @@ log = logging.getLogger(__name__)
 
 
 class Uroute:
-    def __init__(self, url, preferred_prog=None):
-        self.url = url
+    """Main controller class."""
+
+    def __init__(self, preferred_prog=None):
         self.default_program = None
         self.preferred_prog = preferred_prog
-        self.url_cleaner = None
+        self.url_cleaning_rules = {}
 
         # Load config
         self.config = Config()
@@ -43,7 +45,8 @@ class Uroute:
 
             prog_id = section_name[len('program:'):]
             if prog_id in programs:
-                log.warn('Duplicate config for program %s', prog_id)
+                log.warning('Duplicate config for program %s', prog_id)
+                continue
             section = self.config[section_name]
 
             programs[prog_id] = Program(
@@ -68,14 +71,13 @@ class Uroute:
 
         :seealso: :class:`uroute.url.UrlCleaner`
         """
-        if not self.url_cleaner:
+        if not self.url_cleaning_rules:
             rules_file = self.config['main'].get('clean_urls_rules_file')
             if not rules_file:
                 rules_file = xdgdesktop.get_data_file_path('rules.json')
+            self.url_cleaning_rules = u.load_cleaning_rules(rules_file)
 
-            self.url_cleaner = UrlCleaner(rules_file)
-
-        return self.url_cleaner.clean_url(url)
+        return u.clean_url(self.url_cleaning_rules, url)
 
     def get_program(self, prog_id=None):
         if not self.programs:
@@ -85,7 +87,7 @@ class Uroute:
             if self.preferred_prog in self.programs:
                 prog_id = self.preferred_prog
             else:
-                log.warn(
+                log.warning(
                     'No such program configured: %s', self.preferred_prog,
                 )
         if prog_id is None:
@@ -95,7 +97,7 @@ class Uroute:
             return self.programs[tuple(self.programs.keys())[0]]
 
         if prog_id not in self.programs:
-            raise ValueError('Unknown program ID: {}'.format(prog_id))
+            raise ValueError(f'Unknown program ID: {prog_id}')
         return self.programs[prog_id]
 
     def get_command(self, program):
@@ -103,17 +105,17 @@ class Uroute:
             program = self.get_program(program)
         return program.command
 
-    def run_with_url(self, command):
-        log.debug('Routing URL %s to command: %s', self.url, command)
+    def run(self, command, url):
+        log.debug('Routing URL %s to command: %s', url, command)
 
         run_args = [
-            arg == '@URL' and self.url or arg for arg in command.split()
+            arg == '@URL' and url or arg for arg in command.split()
         ]
 
-        if self.url not in run_args:
-            run_args.append(self.url)
+        if url not in run_args:
+            run_args.append(url)
 
-        subprocess.run(run_args)
+        subprocess.run(run_args, check=False)
 
     def set_as_default_browser(self):
         """Installs Uroute as the default browser for the current user."""
@@ -122,5 +124,5 @@ class Uroute:
                 xdgdesktop.get_or_create_desktop_file(),
             )
         except FileNotFoundError as exc:
-            log.warn('Command not found %s', exc)
+            log.warning('Command not found %s', exc)
             return False
