@@ -164,12 +164,13 @@ class UrouteGui(Gtk.Window):
         icon = None
         if program.icon:
             icon = Gtk.Image.new_from_file(program.icon).get_pixbuf()
-            if icon.get_width() > 64 or icon.get_height() > 64:
-                icon = icon.scale_simple(
-                    64, 64, GdkPixbuf.InterpType.BILINEAR,
-                )
             if icon is None:
-                log.warn('Unable to load icon from %s', program.icon)
+                log.warning('Unable to load icon from %s', program.icon)
+            else:
+                if icon.get_width() > 64 or icon.get_height() > 64:
+                    icon = icon.scale_simple(
+                        64, 64, GdkPixbuf.InterpType.BILINEAR,
+                    )
 
         if icon is None:
             icon = Gtk.IconTheme.get_default().load_icon(
