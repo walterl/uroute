@@ -5,8 +5,8 @@
 Uroute is like the "Open URL with..." dialog on Android.
 
 Suppose you have the [Tor Browser](https://www.torproject.org/projects/torbrowser.html.en),
-[Brave](https://brave.com), and [Firefox](https://www.mozilla.org/en-US/firefox/new/)
-installed, with Firefox profiles *LAN* and *VPN*. With Uroute as your default
+[Brave](https://brave.com), and [LibreWolf](https://librewolf.net)
+installed, with LibreWolf profiles *LAN* and *VPN*. With Uroute as your default
 browser, you can open each clicked URL in any of those browsers, in any
 supported mode or profile.
 
@@ -28,15 +28,15 @@ name = Brave: Incognito
 command = brave-browser --incognito
 icon = /usr/share/icons/hicolor/64x64/apps/brave-browser.png
 
-[program:firefox-local]
-name = Firefox Local
-command = firefox --class firefox-profile-local -P Local --private-window
-icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+[program:librewolf-lan]
+name = LibreWolf LAN
+command = librewolf --class librewolf-profile-lan -P LAN --private-window
+icon = /usr/share/librewolf/browser/chrome/icons/default/default128.png
 
-[program:firefox-vpn]
-name = Firefox VPN
-command = firefox --class firefox-profile-vpn -P VPN --private-window
-icon = /usr/share/icons/hicolor/64x64/apps/firefox.png
+[program:librewolf-vpn]
+name = LibreWolf VPN
+command = librewolf --class librewolf-profile-vpn -P VPN --private-window
+icon = /usr/share/librewolf/browser/chrome/icons/default/default128.png
 ```
 
 See the [Configuration](#configuration) section below for more details.
@@ -63,11 +63,12 @@ work in other Freedesktop environments with Python 3 and GTK 3 installed.
 * [X] Open command-line argument URL in any of the configured external browsers.
 * [X] Detect if Uroute is the default browser, and install it as such.
 * [X] Modify URL before opening it in the selected browser.
-* [X] Modify command-line of configured browser launching it.
+* [X] Modify command-line of configured browser before launching it.
 * [X] Extract URL from clipboard contents if no URL was specified.
 * [X] Filter/clean URL before launching browser
   * [X] Remove tracking parameters
   * [X] Automatically unshorten short URLs
+* [ ] Replace recognized service URLs with privacy friendly alternatives #5 
 * [ ] Set default browser dynamically, based on URL
 * [ ] GUI for managing configuration
 * [ ] Improve browser detection: import configuration from installed browsers' XDG desktop entries
@@ -84,7 +85,7 @@ especially useful when you want to open a link from one browser in another.
 ## Configuration
 
 The Uroute configuration file lives in `$XDG_CONFIG_HOME/uroute/uroute.ini`. On
-Ubuntu that is `$HOME/.config/uroute/uroute.ini`.
+most Linux systems that is `$HOME/.config/uroute/uroute.ini`.
 
 It is created automatically and pre-populated with some crude browser detection
 if that file does not exist.
