@@ -1,3 +1,5 @@
+"""Creating and managing Uroute configuraiton."""
+
 import os
 from configparser import ConfigParser
 
@@ -10,12 +12,13 @@ DEFAULT_CONFIG = os.path.join(
 
 
 def create_initial_config(filename):
-    import webbrowser
+    import webbrowser  # pylint: disable=import-outside-toplevel
     config = ConfigParser()
     config['main'] = {}  # Just to make sure 'main' is added first
     default_browser = None
 
-    for browser_name in webbrowser._browsers.keys():
+    # pylint: disable=protected-access
+    for browser_name in webbrowser._browsers:
         if browser_name == 'firefox':
             config['program:firefox'] = {
                 'name': 'Firefox',
@@ -46,13 +49,15 @@ def create_initial_config(filename):
     if default_browser:
         config['main'] = {'default_program': default_browser}
 
-    with open(filename, 'w') as config_file:
+    with open(filename, 'w', encoding='UTF-8') as config_file:
         config.write(config_file)
 
 
 class Config(ConfigParser):
+    """Uroute configuraiton."""
+
     def __init__(self, filename=None):
-        super(Config, self).__init__()
+        super().__init__()
 
         if filename is None:
             filename = DEFAULT_CONFIG
@@ -75,13 +80,13 @@ class Config(ConfigParser):
         try:
             value = self[section].getboolean(setting, fallback=fallback)
         except ValueError:
-            self.uroute.config[section][setting] = 'yes' if fallback else 'no'
+            self[section][setting] = 'yes' if fallback else 'no'
             value = fallback
 
         return value
 
     def save(self):
-        with open(self.filename, 'w') as config_file:
+        with open(self.filename, 'w', encoding='UTF-8') as config_file:
             self.write(config_file)
 
     def write_bool(self, setting, value, section='main'):

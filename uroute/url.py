@@ -25,7 +25,7 @@ USER_AGENT = 'uroute URLCleaner (python urllib)'
 def download_rules_data(save_path=None):
     """Download URL cleaning rules to `save_path`."""
     log.debug('Downloading rules data to %r', save_path)
-    with open(save_path, 'w') as rules_file:
+    with open(save_path, 'w', encoding='UTF-8') as rules_file:
         request = Request(URL_CLEARURLS_DATA,
                           headers={'User-Agent': USER_AGENT})
         with urlopen(request) as resp:
@@ -41,15 +41,15 @@ def load_cleaning_rules(rules_path):
     is automatically downloaded and loaded.
     """
     try:
-        with open(rules_path) as rules_file:
+        with open(rules_path, encoding='UTF-8') as rules_file:
             rules = json.load(rules_file)
             log.debug('URL cleaning rules loaded from %r', rules_path)
         return rules
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         # If anything went wrong reading the rules file, redownload
         # it.
         download_rules_data(rules_path)
-        with open(rules_path) as rules_file:
+        with open(rules_path, encoding='UTF-8') as rules_file:
             rules = json.load(rules_file)
             log.debug('URL cleaning rules loaded from %r', rules_path)
         return rules

@@ -1,1 +1,3 @@
-version = '0.1.2'
+"""Program version."""
+
+VERSION = '0.1.2'

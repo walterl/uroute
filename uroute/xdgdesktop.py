@@ -1,3 +1,5 @@
+"""Contains all freedesktop-related functionality."""
+
 import logging
 import os
 import shutil
@@ -74,7 +76,7 @@ def get_default_browser():
         default = subprocess.check_output(cmd).decode().strip()
         log.debug('$ %r => %s', cmd, default)
         return default
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         log.exception('Unable to get default browser:')
     return None
 
@@ -87,7 +89,7 @@ def set_default_browser(desktop_entry):
         subprocess.check_output(cmd)
         log.debug('$ %r', cmd)
         return True
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         log.exception('Unable to set default browser with cmd %r:', cmd)
     return False
 
@@ -118,9 +120,9 @@ def get_data_file_path(filename):
     # Ensure that `data_file_name`'s parent directory exists
     dir_name = os.path.dirname(data_file_name)
     if not os.path.isdir(dir_name):
-        log.debug(f'Creating dirs: {dir_name}')
+        log.debug('Creating dirs: %s', dir_name)
         os.makedirs(dir_name)
     else:
-        log.debug(f'Data file dir: {dir_name}')
+        log.debug('Data file dir: %s', dir_name)
 
     return data_file_name
