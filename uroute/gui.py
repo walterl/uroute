@@ -60,10 +60,10 @@ class UrouteGui(Gtk.Window):
         self.orig_url = None
 
         self._build_ui()
-        self.set_url(self.uroute.url)
-        self._check_url()
 
-    def run(self):
+    def run(self, url):
+        self.set_url(url)
+        self._check_clipboard_url()
         self.show_all()
         self._check_default_browser()
 
@@ -73,7 +73,7 @@ class UrouteGui(Gtk.Window):
         if Notify.is_initted():
             Notify.uninit()
 
-        return self.command
+        return (self.command, self.url)
 
     @property
     def url(self):
@@ -150,7 +150,7 @@ class UrouteGui(Gtk.Window):
                 urgency=Notify.Urgency.CRITICAL,
             )
 
-    def _check_url(self):
+    def _check_clipboard_url(self):
         if not self.url \
                 and self.uroute.config.read_bool('read_url_from_clipboard'):
             clipboard_url = get_clipboard_url()
@@ -293,10 +293,6 @@ class UrouteGui(Gtk.Window):
 
     def _on_run_clicked(self, _button):
         self.command = self.command_entry.get_text()
-        self.uroute.url = self.url
-
-        log.debug('Command: %r, URL: %r', self.command, self.uroute.url)
-
         self.hide()
         Gtk.main_quit()
 

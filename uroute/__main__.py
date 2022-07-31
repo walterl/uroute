@@ -31,12 +31,13 @@ def main():
         print('Uroute {}'.format(version))
         exit(0)
 
-    ur = Uroute(options.URL, preferred_prog=options.program)
+    ur = Uroute(preferred_prog=options.program)
 
     try:
-        command = UrouteGui(ur).run()
+        command, url = UrouteGui(ur).run(options.URL)
+        log.debug('Command: %r, URL: %r', command, url)
         if command:
-            ur.run_with_url(command)
+            ur.run(command, url)
     except Exception as error:
         log.exception(str(error))
         exit(1)

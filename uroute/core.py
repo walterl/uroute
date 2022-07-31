@@ -14,8 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class Uroute:
-    def __init__(self, url, preferred_prog=None):
-        self.url = url
+    def __init__(self, preferred_prog=None):
         self.default_program = None
         self.preferred_prog = preferred_prog
         self.url_cleaning_rules = {}
@@ -103,15 +102,15 @@ class Uroute:
             program = self.get_program(program)
         return program.command
 
-    def run_with_url(self, command):
-        log.debug('Routing URL %s to command: %s', self.url, command)
+    def run(self, command, url):
+        log.debug('Routing URL %s to command: %s', url, command)
 
         run_args = [
-            arg == '@URL' and self.url or arg for arg in command.split()
+            arg == '@URL' and url or arg for arg in command.split()
         ]
 
-        if self.url not in run_args:
-            run_args.append(self.url)
+        if url not in run_args:
+            run_args.append(url)
 
         subprocess.run(run_args)
 
